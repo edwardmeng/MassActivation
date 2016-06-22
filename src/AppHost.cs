@@ -47,7 +47,7 @@ namespace Wheatech.Hosting
                 {
                     if (attribute.StartupType.IsGenericTypeDefinition)
                     {
-                        throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Startup_GenericType, attribute.StartupType.FullName, startupAssemblyName));
+                        throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Startup_GenericType, TypeNameHelper.GetTypeDisplayName(attribute.StartupType), startupAssemblyName));
                     }
                     yield return attribute.StartupType;
                 }
@@ -78,11 +78,11 @@ namespace Wheatech.Hosting
             var constructors = type.GetConstructors();
             if (constructors.Length == 0)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.NoPublicConstructor, type.FullName));
+                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.NoPublicConstructor, TypeNameHelper.GetTypeDisplayName(type)));
             }
             if (constructors.Length > 1)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_PublicConstructor, type.FullName));
+                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_PublicConstructor, TypeNameHelper.GetTypeDisplayName(type)));
             }
             return constructors[0];
         }
@@ -114,7 +114,8 @@ namespace Wheatech.Hosting
             }
             if (constructors.Count > 0)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.CannotCreateInstances, string.Join(", ", constructors.Select(x => x.Item1.FullName))));
+                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.CannotCreateInstances,
+                    string.Join(", ", constructors.Select(x => TypeNameHelper.GetTypeDisplayName(x.Item1)))));
             }
             return instances;
         }
@@ -185,7 +186,7 @@ namespace Wheatech.Hosting
             }
             if (nomalMethodsWithEnv.Count > 1)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithEnv, type.FullName));
+                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithEnv, TypeNameHelper.GetTypeDisplayName(type)));
             }
             if (nomalMethodsWithEnv.Count == 1)
             {
@@ -193,7 +194,7 @@ namespace Wheatech.Hosting
             }
             if (nomalMethodsWithoutEnv.Count > 1)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithoutEnv, type.FullName));
+                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithoutEnv, TypeNameHelper.GetTypeDisplayName(type)));
             }
             if (nomalMethodsWithoutEnv.Count == 1)
             {
@@ -201,11 +202,11 @@ namespace Wheatech.Hosting
             }
             if (genericMethodsWithEnv.Count > 0)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithEnv, type.FullName));
+                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithEnv, TypeNameHelper.GetTypeDisplayName(type)));
             }
             if (genericMethodsWithoutEnv.Count > 0)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithoutEnv, type.FullName));
+                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithoutEnv, TypeNameHelper.GetTypeDisplayName(type)));
             }
             return null;
         }
@@ -219,11 +220,13 @@ namespace Wheatech.Hosting
                 {
                     if (method.IsConstructor)
                     {
-                        throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidConstructorParameter, parameter.Name, method.DeclaringType));
+                        throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidConstructorParameter, parameter.Name,
+                            TypeNameHelper.GetTypeDisplayName(method.DeclaringType)));
                     }
                     else
                     {
-                        throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidMethodParameter, parameter.Name, method.Name, method.DeclaringType));
+                        throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidMethodParameter, parameter.Name, method.Name,
+                            TypeNameHelper.GetTypeDisplayName(method.DeclaringType)));
                     }
                 }
             }
@@ -254,6 +257,13 @@ namespace Wheatech.Hosting
                         i--;
                     }
                 }
+            }
+            if (methods.Count > 0)
+            {
+                throw new AggregateException(
+                    methods.Select(method =>
+                            new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, method.Item2.Name,
+                                TypeNameHelper.GetTypeDisplayName(method.Item2.DeclaringType)))));
             }
         }
 
@@ -386,8 +396,8 @@ namespace Wheatech.Hosting
                 }
                 Thread.GetDomain().DomainUnload += OnDomainUnload;
 
-                var evt = typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-                evt?.AddMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
+                typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
+                    .AddMethod.Invoke(null, new object[] {new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown)});
             }
         }
 

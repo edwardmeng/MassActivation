@@ -70,6 +70,15 @@ namespace Wheatech.Hosting.Properties {
         }
         
         /// <summary>
+        ///   查找类似 The method {0} in the startup type {1} cannot be invoke. 的本地化字符串。
+        /// </summary>
+        internal static string Cannot_InvokeMethod {
+            get {
+                return ResourceManager.GetString("Cannot_InvokeMethod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 There are multiple public constructors for the startup type {0}, the hosting application cannot determine which one should be used to instantiate. 的本地化字符串。
         /// </summary>
         internal static string Cannot_Multiple_PublicConstructor {

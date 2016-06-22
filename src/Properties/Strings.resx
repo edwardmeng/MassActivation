@@ -123,6 +123,9 @@
   <data name="Cannot_GenericMethod" xml:space="preserve">
     <value>The startup method {0} in the type {1} cannot be generic.</value>
   </data>
+  <data name="Cannot_InvokeMethod" xml:space="preserve">
+    <value>The method {0} in the startup type {1} cannot be invoke.</value>
+  </data>
   <data name="Cannot_Multiple_PublicConstructor" xml:space="preserve">
     <value>There are multiple public constructors for the startup type {0}, the hosting application cannot determine which one should be used to instantiate.</value>
   </data>
