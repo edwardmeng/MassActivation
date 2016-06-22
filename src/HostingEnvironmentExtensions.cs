@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Web.Compilation;
 
 namespace Wheatech.Hosting
 {
@@ -62,6 +66,21 @@ namespace Wheatech.Hosting
                 throw new ArgumentNullException(nameof(hostingEnvironment));
             }
             return hostingEnvironment.IsEnvironment(EnvironmentName.Staging);
+        }
+
+        /// <summary>
+        /// Returns all the assemblies to be used by the hosting application.
+        /// </summary>
+        /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/>.</param>
+        /// <returns>All the assemblies to be used by the application.</returns>
+        public static IEnumerable<Assembly> GetAssemblies(this IHostingEnvironment hostingEnvironment)
+        {
+            if (hostingEnvironment == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnvironment));
+            }
+            var assemblies = System.Web.Hosting.HostingEnvironment.IsHosted ? BuildManager.GetReferencedAssemblies().OfType<Assembly>() : new AssemblyDirScanner();
+            return assemblies.Union(AppDomain.CurrentDomain.GetAssemblies());
         }
 
         /// <summary>

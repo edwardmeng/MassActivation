@@ -14,8 +14,6 @@ namespace Wheatech.Hosting
         {
         }
 
-        public Version ApplicationVersion { get; } = Assembly.GetEntryAssembly()?.GetName().Version;
-
         public string ApplicationBasePath
         {
             get
