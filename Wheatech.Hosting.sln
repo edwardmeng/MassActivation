@@ -11,6 +11,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTest", "UnitTest", "{12
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Hosting.Tests", "test\Wheatech.Hosting.Tests\Wheatech.Hosting.Tests.csproj", "{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{477BE195-CBB7-4837-A2D9-75E5D35F3961}"
+	ProjectSection(SolutionItems) = preProject
+		nuget\build.cmd = nuget\build.cmd
+		nuget\nuget.config = nuget\nuget.config
+		nuget\Wheatech.Hosting.nuspec = nuget\Wheatech.Hosting.nuspec
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

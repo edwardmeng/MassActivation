@@ -7,7 +7,7 @@ set version=
 if not "%PackageVersion%" == "" (
    set version=-Version %PackageVersion%
 ) else (
-   set version=-Version 1.0.0
+   set version=-Version 1.0.0-beta
 )
 REM Determine msbuild path
 set msbuildtmp="%ProgramFiles%\MSBuild\14.0\bin\msbuild"
@@ -19,30 +19,24 @@ set VisualStudioVersion=14.0
 REM Package restore
 echo.
 echo Running package restore...
-call :ExecuteCmd ..\tools\nuget.exe restore ..\Wheatech.sln -OutputDirectory ..\packages -NonInteractive -ConfigFile nuget.config
+call :ExecuteCmd ..\tools\nuget.exe restore ..\Wheatech.Hosting.sln -OutputDirectory ..\packages -NonInteractive -ConfigFile nuget.config
 IF %ERRORLEVEL% NEQ 0 goto error
 
 echo Building solution...
-call :ExecuteCmd %msbuild% "..\Wheatech.sln" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
-IF %ERRORLEVEL% NEQ 0 goto error
-
-REM Run tests
-echo.
-echo Run tests...
-call :ExecuteCmd ..\tools\nuget.exe install xunit.runner.console -Version 2.1.0 -OutputDirectory ..\packages
-IF %ERRORLEVEL% NEQ 0 goto error
-call :ExecuteCmd ..\packages\xunit.runner.console.2.1.0\tools\xunit.console.exe ..\tests\bin\%config%\Wheatech.UnitTest.dll
+call :ExecuteCmd %msbuild% "..\Wheatech.Hosting.sln" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
 IF %ERRORLEVEL% NEQ 0 goto error
 
 echo Packaging...
-set libtmp="%cd%\lib\"
+set libtmp=%cd%\lib
 set packagestmp="%cd%\packages"
 if not exist %libtmp% mkdir %libtmp%
 if not exist %packagestmp% mkdir %packagestmp%
 
-copy ..\src\bin\%config%\Wheatech.dll %libtmp% /Y
+if not exist %libtmp%\net461 mkdir %libtmp%\net461
+copy ..\src\bin\%config%\Wheatech.Hosting.dll %libtmp%\net461 /Y
+copy ..\src\bin\%config%\Wheatech.Hosting.xml %libtmp%\net461 /Y
 
-call :ExecuteCmd ..\tools\nuget.exe pack "%cd%\Wheatech.nuspec" -OutputDirectory %packagestmp% %version%
+call :ExecuteCmd ..\tools\nuget.exe pack "%cd%\Wheatech.Hosting.nuspec" -OutputDirectory %packagestmp% %version%
 IF %ERRORLEVEL% NEQ 0 goto error
 
 rmdir %libtmp% /S /Q

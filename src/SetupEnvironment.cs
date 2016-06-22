@@ -5,6 +5,9 @@ using System.Runtime.Versioning;
 
 namespace Wheatech.Hosting
 {
+    /// <summary>
+    /// Provides the informations for the application setup environment.
+    /// </summary>
     public sealed class SetupEnvironment
     {
         private string _applicationBasePath;
@@ -14,6 +17,9 @@ namespace Wheatech.Hosting
         {
         }
 
+        /// <summary>
+        /// Gets the base application physical directory of the hosting application.
+        /// </summary>
         public string ApplicationBasePath
         {
             get
@@ -23,6 +29,9 @@ namespace Wheatech.Hosting
             }
         }
 
+        /// <summary>
+        /// Gets the runtime framework name of the hosting application.
+        /// </summary>
         public FrameworkName RuntimeFramework
         {
             get
@@ -47,6 +56,9 @@ namespace Wheatech.Hosting
             }
         }
 
+        /// <summary>
+        /// Gets the runtime .Net Framework version that the hosting application is running against.
+        /// </summary>
         public Version RuntimeVersion { get; } = typeof(object).GetTypeInfo().Assembly.GetName().Version;
     }
 }

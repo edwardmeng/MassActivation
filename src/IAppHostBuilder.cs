@@ -2,6 +2,9 @@
 
 namespace Wheatech.Hosting
 {
+    /// <summary>
+    /// The configuration interface for the <see cref="AppHost"/> environment variables.
+    /// </summary>
     public interface IAppHostBuilder
     {
         /// <summary>

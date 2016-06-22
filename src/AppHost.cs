@@ -391,6 +391,11 @@ namespace Wheatech.Hosting
             Unload();
         }
 
+        private static void OnStopListening(object sender, EventArgs e)
+        {
+            Unload();
+        }
+
         private static void OnAppDomainShutdown(object sender, BuildManagerHostUnloadEventArgs args)
         {
             Unload();
@@ -426,9 +431,9 @@ namespace Wheatech.Hosting
                     InvokeMethods(methodName, true);
                 }
                 Thread.GetDomain().DomainUnload += OnDomainUnload;
-
                 typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
                     .AddMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
+                System.Web.Hosting.HostingEnvironment.StopListening += OnStopListening;
             }
         }
 
