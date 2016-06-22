@@ -30,6 +30,12 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Wheatech.Hosting.XML</DocumentationFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\tools\wheatech.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -63,7 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\tools\wheatech.snk">
-      <Link>Properties\wheatech.snk</Link>
+      <Link>wheatech.snk</Link>
     </None>
   </ItemGroup>
   <ItemGroup>
