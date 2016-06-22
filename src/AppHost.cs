@@ -27,6 +27,8 @@ namespace Wheatech.Hosting
 
         #endregion
 
+        #region Instantiate
+
         private static IEnumerable<Type> SearchStartupTypes()
         {
             if (_hostingEnvironment == null) yield break;
@@ -151,6 +153,10 @@ namespace Wheatech.Hosting
             }
         }
 
+        #endregion
+
+        #region Invocation
+
         private static MethodInfo LookupMethod(Type type, string methodName, string environment)
         {
             var genericMethodsWithEnv = new List<MethodInfo>();
@@ -161,15 +167,18 @@ namespace Wheatech.Hosting
             var methodNameWithoutEnv = methodName;
             foreach (var method in type.GetMethods())
             {
-                if (method.Name == methodNameWithEnv)
+                if (type.Name != "Startup" + environment)
                 {
-                    if (method.IsGenericMethodDefinition)
+                    if (method.Name == methodNameWithEnv)
                     {
-                        genericMethodsWithEnv.Add(method);
-                    }
-                    else
-                    {
-                        nomalMethodsWithEnv.Add(method);
+                        if (method.IsGenericMethodDefinition)
+                        {
+                            genericMethodsWithEnv.Add(method);
+                        }
+                        else
+                        {
+                            nomalMethodsWithEnv.Add(method);
+                        }
                     }
                 }
                 if (method.Name == methodNameWithoutEnv)
@@ -287,6 +296,10 @@ namespace Wheatech.Hosting
             return true;
         }
 
+        #endregion
+
+        #region Configuration
+
         /// <summary>
         /// Specify the environment to be used by the hosting application. 
         /// </summary>
@@ -369,6 +382,24 @@ namespace Wheatech.Hosting
             return new AppHostBuilder();
         }
 
+        #endregion
+
+        #region Event Handlers
+
+        private static void OnDomainUnload(object sender, EventArgs e)
+        {
+            Unload();
+        }
+
+        private static void OnAppDomainShutdown(object sender, BuildManagerHostUnloadEventArgs args)
+        {
+            Unload();
+        }
+
+        #endregion
+
+        #region Entry Points
+
         /// <summary>
         /// Startup the hosting application.
         /// </summary>
@@ -397,7 +428,7 @@ namespace Wheatech.Hosting
                 Thread.GetDomain().DomainUnload += OnDomainUnload;
 
                 typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
-                    .AddMethod.Invoke(null, new object[] {new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown)});
+                    .AddMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
             }
         }
 
@@ -419,14 +450,6 @@ namespace Wheatech.Hosting
             }
         }
 
-        private static void OnDomainUnload(object sender, EventArgs e)
-        {
-            Unload();
-        }
-
-        private static void OnAppDomainShutdown(object sender, BuildManagerHostUnloadEventArgs args)
-        {
-            Unload();
-        }
+        #endregion
     }
 }
