@@ -16,7 +16,7 @@
     <summary>
       This library makes it easy that allows you to split Startup or Shutdown steps to many difference packages into your application.
     </summary>
-    <copyright>Copyright 2016</copyright>
+    <tags>Activation Startup Shutdown</tags>
   </metadata>
   <files>
     <file src="lib\**\*.dll" target="lib" />
