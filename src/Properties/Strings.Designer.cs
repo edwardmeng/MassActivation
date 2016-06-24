@@ -61,7 +61,16 @@ namespace Wheatech.Activation.Properties {
         }
         
         /// <summary>
-        ///   查找类似 The startup method {0} in the type {1} cannot be generic. 的本地化字符串。
+        ///   查找类似 The activator type {0} for the assembly {1} cannot be interface or abstract class. 的本地化字符串。
+        /// </summary>
+        internal static string Cannot_AbstractOrInterface {
+            get {
+                return ResourceManager.GetString("Cannot_AbstractOrInterface", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The activation method {0} in the type {1} cannot be generic. 的本地化字符串。
         /// </summary>
         internal static string Cannot_GenericMethod {
             get {
@@ -70,7 +79,7 @@ namespace Wheatech.Activation.Properties {
         }
         
         /// <summary>
-        ///   查找类似 The method {0} in the startup type {1} cannot be invoke. 的本地化字符串。
+        ///   查找类似 The method {0} in the activator type {1} cannot be invoke. 的本地化字符串。
         /// </summary>
         internal static string Cannot_InvokeMethod {
             get {
@@ -79,7 +88,7 @@ namespace Wheatech.Activation.Properties {
         }
         
         /// <summary>
-        ///   查找类似 There are multiple public constructors for the startup type {0}, the hosting application cannot determine which one should be used to instantiate. 的本地化字符串。
+        ///   查找类似 There are multiple public constructors for the activator type {0}. The hosting application cannot determine which one should be used to instantiate. 的本地化字符串。
         /// </summary>
         internal static string Cannot_Multiple_PublicConstructor {
             get {
@@ -88,7 +97,7 @@ namespace Wheatech.Activation.Properties {
         }
         
         /// <summary>
-        ///   查找类似 There are multiple public startup method {0} have been found in the type {1}. The hosting application cannot determine which one should be used to invoke. 的本地化字符串。
+        ///   查找类似 There are multiple public activation method {0} have been found in the type {1}. The hosting application cannot determine which one should be used to invoke. 的本地化字符串。
         /// </summary>
         internal static string Cannot_Multiple_StartupMethod {
             get {
@@ -97,7 +106,7 @@ namespace Wheatech.Activation.Properties {
         }
         
         /// <summary>
-        ///   查找类似 Cannot startup the generic type {0} for the assembly {1}. 的本地化字符串。
+        ///   查找类似 The activator type {0} for the assembly {1} cannot be generic type. 的本地化字符串。
         /// </summary>
         internal static string Cannot_Startup_GenericType {
             get {
@@ -106,7 +115,7 @@ namespace Wheatech.Activation.Properties {
         }
         
         /// <summary>
-        ///   查找类似 The startup types cannot be instantiated: {0}. 的本地化字符串。
+        ///   查找类似 The activator types cannot be instantiated: {0}. 的本地化字符串。
         /// </summary>
         internal static string CannotCreateInstances {
             get {

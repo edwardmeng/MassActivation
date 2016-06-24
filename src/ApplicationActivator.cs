@@ -23,13 +23,13 @@ namespace Wheatech.Activation
         private static string[] _startupMethodNames = { "Configuration" };
         private static string[] _unloadMethodNames = { "Unload" };
         private static ActivatingEnvironment _environment;
-        private static IDictionary<Type, object> _instances;
+        private static ActivationMetadata[] _instances;
 
         #endregion
 
         #region Instantiate
 
-        private static IEnumerable<Type> SearchStartupTypes()
+        private static IEnumerable<ActivationMetadata> SearchActivatorTypes()
         {
             if (_environment == null) yield break;
             foreach (var assembly in _environment.GetAssemblies())
@@ -51,7 +51,11 @@ namespace Wheatech.Activation
                     {
                         throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Startup_GenericType, TypeNameHelper.GetTypeDisplayName(attribute.StartupType), startupAssemblyName));
                     }
-                    yield return attribute.StartupType;
+                    if (attribute.StartupType.IsInterface || attribute.StartupType.IsAbstract)
+                    {
+                        throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_AbstractOrInterface, TypeNameHelper.GetTypeDisplayName(attribute.StartupType), startupAssemblyName));
+                    }
+                    yield return new ActivationMetadata(attribute.StartupType); ;
                 }
                 else
                 {
@@ -63,21 +67,17 @@ namespace Wheatech.Activation
                         assembly.GetType(startupAssemblyName + "." + startupNameWithEnv, false) ??
                         assembly.GetType(startupNameWithoutEnv, false) ??
                         assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv, false);
-                    if (startupType != null)
+                    if (startupType != null && !startupType.IsGenericTypeDefinition && !startupType.IsInterface && !startupType.IsAbstract)
                     {
-                        yield return startupType;
+                        yield return new ActivationMetadata(startupType);
                     }
                 }
             }
         }
 
-        private static ConstructorInfo LookupConstructor(Type type)
+        private static ActivationMetadata LookupConstructor(ActivationMetadata type)
         {
-            if (type.IsAbstract || type.IsInterface)
-            {
-                return null;
-            }
-            var constructors = type.GetConstructors();
+            var constructors = ((Type)type.TargetMember).GetConstructors();
             if (constructors.Length == 0)
             {
                 throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.NoPublicConstructor, TypeNameHelper.GetTypeDisplayName(type)));
@@ -86,18 +86,17 @@ namespace Wheatech.Activation
             {
                 throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_PublicConstructor, TypeNameHelper.GetTypeDisplayName(type)));
             }
-            return constructors[0];
+            return new ActivationMetadata(constructors[0], type.Priority);
         }
 
-        private static IDictionary<Type, object> CreateInstances(IEnumerable<Type> types)
+        private static void CreateInstances(ActivationMetadata[] types)
         {
             var constructors = (from type in types
                                 let constructor = ValidateMethod(LookupConstructor(type))
-                                orderby constructor.GetParameters().Length
+                                orderby constructor.Priority, ((MethodBase)constructor.TargetMember).GetParameters().Length
                                 select Tuple.Create(type, constructor)).ToList();
 
-            var instances = new Dictionary<Type, object>();
-            int instanceCount = -1;
+            var instanceCount = -1;
             while (instanceCount != 0)
             {
                 instanceCount = 0;
@@ -105,9 +104,9 @@ namespace Wheatech.Activation
                 {
                     var ctor = constructors[i];
                     object instance;
-                    if (TryCreateInstance(ctor.Item2, out instance))
+                    if (TryCreateInstance((ConstructorInfo)ctor.Item2.TargetMember, out instance))
                     {
-                        instances.Add(ctor.Item1, instance);
+                        ctor.Item1.TargetInstance = instance;
                         constructors.RemoveAt(i);
                         instanceCount++;
                         i--;
@@ -119,7 +118,6 @@ namespace Wheatech.Activation
                 throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.CannotCreateInstances,
                     string.Join(", ", constructors.Select(x => TypeNameHelper.GetTypeDisplayName(x.Item1)))));
             }
-            return instances;
         }
 
         private static bool TryCreateInstance(ConstructorInfo constructor, out object instance)
@@ -149,7 +147,7 @@ namespace Wheatech.Activation
             if (_instances == null) return;
             foreach (var instance in _instances)
             {
-                (instance.Value as IDisposable)?.Dispose();
+                (instance.TargetInstance as IDisposable)?.Dispose();
             }
         }
 
@@ -157,7 +155,7 @@ namespace Wheatech.Activation
 
         #region Invocation
 
-        private static MethodInfo LookupMethod(Type type, string methodName, string environment)
+        private static ActivationMetadata LookupMethod(ActivationMetadata type, string methodName, string environment)
         {
             var genericMethodsWithEnv = new List<MethodInfo>();
             var nomalMethodsWithEnv = new List<MethodInfo>();
@@ -165,9 +163,9 @@ namespace Wheatech.Activation
             var nomalMethodsWithoutEnv = new List<MethodInfo>();
             var methodNameWithEnv = methodName + environment;
             var methodNameWithoutEnv = methodName;
-            foreach (var method in type.GetMethods())
+            foreach (var method in ((Type)type.TargetMember).GetMethods())
             {
-                if (type.Name != "Startup" + environment)
+                if (type.TargetMember.Name != "Startup" + environment)
                 {
                     if (method.Name == methodNameWithEnv)
                     {
@@ -199,7 +197,7 @@ namespace Wheatech.Activation
             }
             if (nomalMethodsWithEnv.Count == 1)
             {
-                return nomalMethodsWithEnv[0];
+                return new ActivationMetadata(nomalMethodsWithEnv[0], type.Priority);
             }
             if (nomalMethodsWithoutEnv.Count > 1)
             {
@@ -207,7 +205,7 @@ namespace Wheatech.Activation
             }
             if (nomalMethodsWithoutEnv.Count == 1)
             {
-                return nomalMethodsWithoutEnv[0];
+                return new ActivationMetadata(nomalMethodsWithoutEnv[0], type.Priority);
             }
             if (genericMethodsWithEnv.Count > 0)
             {
@@ -220,9 +218,10 @@ namespace Wheatech.Activation
             return null;
         }
 
-        private static T ValidateMethod<T>(T method)
-            where T : MethodBase
+        private static ActivationMetadata ValidateMethod(ActivationMetadata metadata)
         {
+            if (metadata == null) return null;
+            var method = (MethodBase)metadata.TargetMember;
             foreach (var parameter in method.GetParameters())
             {
                 if (parameter.IsOut || parameter.ParameterType.IsByRef)
@@ -239,16 +238,17 @@ namespace Wheatech.Activation
                     }
                 }
             }
-            return method;
+            return metadata;
         }
 
         private static void InvokeMethods(string methodName, bool startup)
         {
             if (_environment == null || _instances == null) return;
-            var methods = (from type in _instances.Keys
-                           let method = ValidateMethod(LookupMethod(type, methodName, _environment.Environment))
-                           orderby method.GetParameters().Length
-                           select Tuple.Create(type, method)).ToList();
+            var methods = (from instance in _instances
+                           let method = ValidateMethod(LookupMethod(instance, methodName, _environment.Environment))
+                           where method != null
+                           orderby method.Priority, ((MethodBase)method.TargetMember).GetParameters().Length
+                           select Tuple.Create(instance, method)).ToList();
             if (!startup)
             {
                 methods.Reverse();
@@ -259,7 +259,7 @@ namespace Wheatech.Activation
                 invokeMethodCount = 0;
                 for (int i = 0; i < methods.Count; i++)
                 {
-                    if (TryInvokeMethod(methods[i].Item2, _instances[methods[i].Item1]))
+                    if (TryInvokeMethod((MethodInfo)methods[i].Item2.TargetMember, methods[i].Item1.TargetInstance))
                     {
                         methods.RemoveAt(i);
                         invokeMethodCount++;
@@ -271,8 +271,8 @@ namespace Wheatech.Activation
             {
                 throw new AggregateException(
                     methods.Select(method =>
-                            new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, method.Item2.Name,
-                                TypeNameHelper.GetTypeDisplayName(method.Item2.DeclaringType)))));
+                            new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, method.Item2.TargetMember.Name,
+                                TypeNameHelper.GetTypeDisplayName(method.Item1.TargetMember)))));
             }
         }
 
@@ -425,7 +425,8 @@ namespace Wheatech.Activation
                 {
                     _environment.ApplicationVersion = _applicationVersion;
                 }
-                _instances = CreateInstances(SearchStartupTypes());
+                var activators = SearchActivatorTypes().ToArray();
+                CreateInstances(activators);
                 foreach (var methodName in _startupMethodNames)
                 {
                     InvokeMethods(methodName, true);
