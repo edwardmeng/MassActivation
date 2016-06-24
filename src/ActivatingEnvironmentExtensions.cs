@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Web;
 using System.Web.Compilation;
 
 namespace Wheatech.Activation
@@ -79,7 +80,21 @@ namespace Wheatech.Activation
             {
                 throw new ArgumentNullException(nameof(environment));
             }
-            var assemblies = System.Web.Hosting.HostingEnvironment.IsHosted ? BuildManager.GetReferencedAssemblies().OfType<Assembly>() : new AssemblyDirScanner();
+            IEnumerable<Assembly> assemblies = null;
+            if (System.Web.Hosting.HostingEnvironment.IsHosted)
+            {
+                try
+                {
+                    assemblies = BuildManager.GetReferencedAssemblies().OfType<Assembly>();
+                }
+                catch (Exception ex) when (ex is InvalidOperationException || ex is HttpException)
+                {
+                }
+            }
+            if (assemblies == null)
+            {
+                assemblies = new AssemblyDirScanner();
+            }
             return assemblies.Union(AppDomain.CurrentDomain.GetAssemblies());
         }
 

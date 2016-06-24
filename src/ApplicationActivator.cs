@@ -23,7 +23,7 @@ namespace Wheatech.Activation
         private static string[] _startupMethodNames = { "Configuration" };
         private static string[] _unloadMethodNames = { "Unload" };
         private static ActivatingEnvironment _environment;
-        private static ActivationMetadata[] _instances;
+        private static ActivationMetadata[] _activators;
 
         #endregion
 
@@ -144,8 +144,8 @@ namespace Wheatech.Activation
 
         private static void DisposeInstances()
         {
-            if (_instances == null) return;
-            foreach (var instance in _instances)
+            if (_activators == null) return;
+            foreach (var instance in _activators)
             {
                 (instance.TargetInstance as IDisposable)?.Dispose();
             }
@@ -243,8 +243,8 @@ namespace Wheatech.Activation
 
         private static void InvokeMethods(string methodName, bool startup)
         {
-            if (_environment == null || _instances == null) return;
-            var methods = (from instance in _instances
+            if (_environment == null || _activators == null) return;
+            var methods = (from instance in _activators
                            let method = ValidateMethod(LookupMethod(instance, methodName, _environment.Environment))
                            where method != null
                            orderby method.Priority, ((MethodBase)method.TargetMember).GetParameters().Length
@@ -427,6 +427,7 @@ namespace Wheatech.Activation
                 }
                 var activators = SearchActivatorTypes().ToArray();
                 CreateInstances(activators);
+                _activators = activators;
                 foreach (var methodName in _startupMethodNames)
                 {
                     InvokeMethods(methodName, true);
@@ -451,7 +452,7 @@ namespace Wheatech.Activation
                     InvokeMethods(methodName, false);
                 }
                 DisposeInstances();
-                _instances = null;
+                _activators = null;
                 _environment = null;
             }
         }
