@@ -3,16 +3,16 @@
 namespace Wheatech.Activation
 {
     /// <summary>
-    /// Used to mark which class in an assembly should be used for automatic startup. 
+    /// Used to mark which class in an assembly should be used for automatic startup and shutdown. 
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly)]
-    public class AssemblyStartupAttribute : Attribute
+    public class AssemblyActivatorAttribute : Attribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AssemblyStartupAttribute"/> class 
+        /// Initializes a new instance of the <see cref="AssemblyActivatorAttribute"/> class 
         /// </summary>
         /// <param name="startupType">The startup class</param>
-        public AssemblyStartupAttribute(Type startupType)
+        public AssemblyActivatorAttribute(Type startupType)
         {
             if (startupType == null)
             {

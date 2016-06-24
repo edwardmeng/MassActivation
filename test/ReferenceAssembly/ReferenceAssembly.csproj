@@ -36,7 +36,7 @@
   <ItemGroup>
     <Compile Include="AppContext.cs" />
     <Compile Include="AssemblyEnvironment.cs" />
-    <Compile Include="AssemblyLoader.cs" />
+    <Compile Include="AssemblyActivator.cs" />
     <Compile Include="IAppContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,13 +1,13 @@
 ﻿using ReferenceAssembly;
 using Wheatech.Activation;
 
-[assembly:AssemblyStartup(typeof(AssemblyLoader))]
+[assembly:AssemblyActivator(typeof(AssemblyActivator))]
 
 namespace ReferenceAssembly
 {
-    public class AssemblyLoader
+    public class AssemblyActivator
     {
-        public AssemblyLoader(IActivatingEnvironment environment)
+        public AssemblyActivator(IActivatingEnvironment environment)
         {
             AssemblyEnvironment.Environment = environment.Environment;
             AssemblyEnvironment.ApplicationName = environment.ApplicationName;

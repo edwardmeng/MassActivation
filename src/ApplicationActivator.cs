@@ -35,10 +35,10 @@ namespace Wheatech.Activation
             foreach (var assembly in _environment.GetAssemblies())
             {
                 // Detect the startup type declared using AssemblyStartupAttribute
-                AssemblyStartupAttribute attribute;
+                AssemblyActivatorAttribute attribute;
                 try
                 {
-                    attribute = assembly.GetCustomAttribute<AssemblyStartupAttribute>();
+                    attribute = assembly.GetCustomAttribute<AssemblyActivatorAttribute>();
                 }
                 catch (CustomAttributeFormatException)
                 {

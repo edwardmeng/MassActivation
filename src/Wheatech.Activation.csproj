@@ -44,7 +44,7 @@
   <ItemGroup>
     <Compile Include="ActivatorBuilder.cs" />
     <Compile Include="AssemblyDirScanner.cs" />
-    <Compile Include="AssemblyStartupAttribute.cs" />
+    <Compile Include="AssemblyActivatorAttribute.cs" />
     <Compile Include="ApplicationActivator.cs" />
     <Compile Include="EnvironmentName.cs" />
     <Compile Include="ActivatingEnvironment.cs" />
