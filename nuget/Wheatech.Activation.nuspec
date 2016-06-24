@@ -2,10 +2,11 @@
 <package>
   <metadata>
     <id>Wheatech.Activation</id>
-    <version>1.0.0</version>
+    <version>1.0.0-rc1</version>
     <authors>edwardmeng</authors>
     <owners>edwardmeng</owners>
     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
+    <projectUrl>https://github.com/edwardmeng/Wheatech.Activation</projectUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>
       This library makes it easy that allows you to split Startup or Shutdown steps to many difference packages into your application.
