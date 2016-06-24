@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Wheatech.Activation</id>
+    <version>1.0.0</version>
+    <authors>edwardmeng</authors>
+    <owners>edwardmeng</owners>
+    <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>
+      This library makes it easy that allows you to split Startup or Shutdown steps to many difference packages into your application.
+      It is useful to keep code clean and single-responsibility principle for every package in your solution.
+      Instead of assembly the startup or shutdown codes into the Global.asax or Startup class from many packages.
+    </description>
+    <copyright>Copyright 2016</copyright>
+  </metadata>
+  <files>
+    <file src="lib\**\*.dll" target="lib" />
+    <file src="lib\**\*.xml" target="lib" />
+  </files>
+</package>

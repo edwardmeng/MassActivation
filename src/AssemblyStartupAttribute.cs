@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Wheatech.Hosting
+namespace Wheatech.Activation
 {
     /// <summary>
     /// Used to mark which class in an assembly should be used for automatic startup. 

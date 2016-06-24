@@ -7,8 +7,8 @@
     <ProjectGuid>{372427EA-7535-42B7-886D-E254E67670CE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Wheatech.Hosting</RootNamespace>
-    <AssemblyName>Wheatech.Hosting</AssemblyName>
+    <RootNamespace>Wheatech.Activation</RootNamespace>
+    <AssemblyName>Wheatech.Activation</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -28,7 +28,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Wheatech.Hosting.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Wheatech.Activation.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -48,16 +48,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppHostBuilder.cs" />
+    <Compile Include="ActivatorBuilder.cs" />
     <Compile Include="AssemblyDirScanner.cs" />
     <Compile Include="AssemblyStartupAttribute.cs" />
-    <Compile Include="AppHost.cs" />
+    <Compile Include="ApplicationActivator.cs" />
     <Compile Include="EnvironmentName.cs" />
-    <Compile Include="HostingEnvironment.cs" />
-    <Compile Include="HostingEnvironmentExtensions.cs" />
-    <Compile Include="HostingException.cs" />
-    <Compile Include="IAppHostBuilder.cs" />
-    <Compile Include="IHostingEnvironment.cs" />
+    <Compile Include="ActivatingEnvironment.cs" />
+    <Compile Include="ActivatingEnvironmentExtensions.cs" />
+    <Compile Include="ActivationException.cs" />
+    <Compile Include="IActivatorBuilder.cs" />
+    <Compile Include="IActivatingEnvironment.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SetupEnvironment.cs" />
     <Compile Include="Properties\Strings.Designer.cs">

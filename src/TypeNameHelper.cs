@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace Wheatech.Hosting
+namespace Wheatech.Activation
 {
     internal class TypeNameHelper
     {

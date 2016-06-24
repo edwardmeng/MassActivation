@@ -6,23 +6,23 @@ using System.Reflection;
 using System.Threading;
 using System.Web;
 using System.Web.Compilation;
-using Wheatech.Hosting.Properties;
+using Wheatech.Activation.Properties;
 
-namespace Wheatech.Hosting
+namespace Wheatech.Activation
 {
     /// <summary>
-    /// The entry point for the application host startup.
+    /// The entry point for the application host activation.
     /// </summary>
-    public static class AppHost
+    public static class ApplicationActivator
     {
         #region Fields
 
-        private static string _environment;
+        private static string _environmentName;
         private static string _applicationName;
         private static Version _applicationVersion;
         private static string[] _startupMethodNames = { "Configuration" };
         private static string[] _unloadMethodNames = { "Unload" };
-        private static HostingEnvironment _hostingEnvironment;
+        private static ActivatingEnvironment _environment;
         private static IDictionary<Type, object> _instances;
 
         #endregion
@@ -31,8 +31,8 @@ namespace Wheatech.Hosting
 
         private static IEnumerable<Type> SearchStartupTypes()
         {
-            if (_hostingEnvironment == null) yield break;
-            foreach (var assembly in _hostingEnvironment.GetAssemblies())
+            if (_environment == null) yield break;
+            foreach (var assembly in _environment.GetAssemblies())
             {
                 // Detect the startup type declared using AssemblyStartupAttribute
                 AssemblyStartupAttribute attribute;
@@ -49,7 +49,7 @@ namespace Wheatech.Hosting
                 {
                     if (attribute.StartupType.IsGenericTypeDefinition)
                     {
-                        throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Startup_GenericType, TypeNameHelper.GetTypeDisplayName(attribute.StartupType), startupAssemblyName));
+                        throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Startup_GenericType, TypeNameHelper.GetTypeDisplayName(attribute.StartupType), startupAssemblyName));
                     }
                     yield return attribute.StartupType;
                 }
@@ -57,7 +57,7 @@ namespace Wheatech.Hosting
                 {
                     // Detect the startup type by using the convension name.
                     var startupNameWithoutEnv = "Startup";
-                    var startupNameWithEnv = "Startup" + _hostingEnvironment.Environment;
+                    var startupNameWithEnv = "Startup" + _environment.Environment;
                     var startupType =
                         assembly.GetType(startupNameWithEnv, false) ??
                         assembly.GetType(startupAssemblyName + "." + startupNameWithEnv, false) ??
@@ -80,11 +80,11 @@ namespace Wheatech.Hosting
             var constructors = type.GetConstructors();
             if (constructors.Length == 0)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.NoPublicConstructor, TypeNameHelper.GetTypeDisplayName(type)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.NoPublicConstructor, TypeNameHelper.GetTypeDisplayName(type)));
             }
             if (constructors.Length > 1)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_PublicConstructor, TypeNameHelper.GetTypeDisplayName(type)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_PublicConstructor, TypeNameHelper.GetTypeDisplayName(type)));
             }
             return constructors[0];
         }
@@ -116,7 +116,7 @@ namespace Wheatech.Hosting
             }
             if (constructors.Count > 0)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.CannotCreateInstances,
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.CannotCreateInstances,
                     string.Join(", ", constructors.Select(x => TypeNameHelper.GetTypeDisplayName(x.Item1)))));
             }
             return instances;
@@ -125,13 +125,13 @@ namespace Wheatech.Hosting
         private static bool TryCreateInstance(ConstructorInfo constructor, out object instance)
         {
             instance = null;
-            if (_hostingEnvironment == null) return false;
+            if (_environment == null) return false;
             var arguments = new List<object>();
             if (constructor == null) return true;
             foreach (var parameter in constructor.GetParameters())
             {
                 object value;
-                if (_hostingEnvironment.Components.TryGetValue(parameter.ParameterType, out value))
+                if (_environment.Components.TryGetValue(parameter.ParameterType, out value))
                 {
                     arguments.Add(value);
                 }
@@ -195,7 +195,7 @@ namespace Wheatech.Hosting
             }
             if (nomalMethodsWithEnv.Count > 1)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithEnv, TypeNameHelper.GetTypeDisplayName(type)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithEnv, TypeNameHelper.GetTypeDisplayName(type)));
             }
             if (nomalMethodsWithEnv.Count == 1)
             {
@@ -203,7 +203,7 @@ namespace Wheatech.Hosting
             }
             if (nomalMethodsWithoutEnv.Count > 1)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithoutEnv, TypeNameHelper.GetTypeDisplayName(type)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithoutEnv, TypeNameHelper.GetTypeDisplayName(type)));
             }
             if (nomalMethodsWithoutEnv.Count == 1)
             {
@@ -211,11 +211,11 @@ namespace Wheatech.Hosting
             }
             if (genericMethodsWithEnv.Count > 0)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithEnv, TypeNameHelper.GetTypeDisplayName(type)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithEnv, TypeNameHelper.GetTypeDisplayName(type)));
             }
             if (genericMethodsWithoutEnv.Count > 0)
             {
-                throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithoutEnv, TypeNameHelper.GetTypeDisplayName(type)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithoutEnv, TypeNameHelper.GetTypeDisplayName(type)));
             }
             return null;
         }
@@ -229,12 +229,12 @@ namespace Wheatech.Hosting
                 {
                     if (method.IsConstructor)
                     {
-                        throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidConstructorParameter, parameter.Name,
+                        throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidConstructorParameter, parameter.Name,
                             TypeNameHelper.GetTypeDisplayName(method.DeclaringType)));
                     }
                     else
                     {
-                        throw new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidMethodParameter, parameter.Name, method.Name,
+                        throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidMethodParameter, parameter.Name, method.Name,
                             TypeNameHelper.GetTypeDisplayName(method.DeclaringType)));
                     }
                 }
@@ -244,9 +244,9 @@ namespace Wheatech.Hosting
 
         private static void InvokeMethods(string methodName, bool startup)
         {
-            if (_hostingEnvironment == null || _instances == null) return;
+            if (_environment == null || _instances == null) return;
             var methods = (from type in _instances.Keys
-                           let method = ValidateMethod(LookupMethod(type, methodName, _hostingEnvironment.Environment))
+                           let method = ValidateMethod(LookupMethod(type, methodName, _environment.Environment))
                            orderby method.GetParameters().Length
                            select Tuple.Create(type, method)).ToList();
             if (!startup)
@@ -271,19 +271,19 @@ namespace Wheatech.Hosting
             {
                 throw new AggregateException(
                     methods.Select(method =>
-                            new HostingException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, method.Item2.Name,
+                            new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, method.Item2.Name,
                                 TypeNameHelper.GetTypeDisplayName(method.Item2.DeclaringType)))));
             }
         }
 
         private static bool TryInvokeMethod(MethodInfo method, object instance)
         {
-            if (_hostingEnvironment == null) return false;
+            if (_environment == null) return false;
             var arguments = new List<object>();
             foreach (var parameter in method.GetParameters())
             {
                 object value;
-                if (_hostingEnvironment.Components.TryGetValue(parameter.ParameterType, out value))
+                if (_environment.Components.TryGetValue(parameter.ParameterType, out value))
                 {
                     arguments.Add(value);
                 }
@@ -304,82 +304,82 @@ namespace Wheatech.Hosting
         /// Specify the environment to be used by the hosting application. 
         /// </summary>
         /// <param name="environmentName">The environment to host the application in.</param>
-        /// <returns>The <see cref="IAppHostBuilder"/>.</returns>
-        public static IAppHostBuilder UseEnvironment(string environmentName)
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public static IActivatorBuilder UseEnvironment(string environmentName)
         {
             if (environmentName == null)
             {
                 throw new ArgumentNullException(nameof(environmentName));
             }
-            lock (typeof(AppHost))
+            lock (typeof(ApplicationActivator))
             {
-                _environment = environmentName;
+                _environmentName = environmentName;
             }
-            return new AppHostBuilder();
+            return new ActivatorBuilder();
         }
 
         /// <summary>
         /// Specify the application name to be used by the hosting application. 
         /// </summary>
         /// <param name="applicationName">The application name to host the application in.</param>
-        /// <returns>The <see cref="IAppHostBuilder"/>.</returns>
-        public static IAppHostBuilder UseApplicationName(string applicationName)
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public static IActivatorBuilder UseApplicationName(string applicationName)
         {
             if (applicationName == null)
             {
                 throw new ArgumentNullException(nameof(applicationName));
             }
-            lock (typeof(AppHost))
+            lock (typeof(ApplicationActivator))
             {
                 _applicationName = applicationName;
             }
-            return new AppHostBuilder();
+            return new ActivatorBuilder();
         }
 
         /// <summary>
         /// Specify the application version to be used by the hosting application. 
         /// </summary>
         /// <param name="applicationVersion">The application version to host the application in.</param>
-        /// <returns>The <see cref="IAppHostBuilder"/>.</returns>
-        public static IAppHostBuilder UseApplicationVersion(Version applicationVersion)
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public static IActivatorBuilder UseApplicationVersion(Version applicationVersion)
         {
             if (applicationVersion == null)
             {
                 throw new ArgumentNullException(nameof(applicationVersion));
             }
-            lock (typeof(AppHost))
+            lock (typeof(ApplicationActivator))
             {
                 _applicationVersion = applicationVersion;
             }
-            return new AppHostBuilder();
+            return new ActivatorBuilder();
         }
 
         /// <summary>
         /// Specifiy the startup method names to be used by the hosting application.
         /// </summary>
         /// <param name="methodNames">The method name to startup the hosting appliction.</param>
-        /// <returns>The <see cref="IAppHostBuilder"/>.</returns>
-        public static IAppHostBuilder UseStartSteps(params string[] methodNames)
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public static IActivatorBuilder UseStartSteps(params string[] methodNames)
         {
-            lock (typeof(AppHost))
+            lock (typeof(ApplicationActivator))
             {
                 _startupMethodNames = methodNames;
             }
-            return new AppHostBuilder();
+            return new ActivatorBuilder();
         }
 
         /// <summary>
         /// Specifiy the unload method names to be used by the hosting application.
         /// </summary>
         /// <param name="methodNames">The method name to unload the hosting appliction.</param>
-        /// <returns>The <see cref="IAppHostBuilder"/>.</returns>
-        public static IAppHostBuilder UseUnloadSteps(params string[] methodNames)
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public static IActivatorBuilder UseUnloadSteps(params string[] methodNames)
         {
-            lock (typeof(AppHost))
+            lock (typeof(ApplicationActivator))
             {
                 _unloadMethodNames = methodNames;
             }
-            return new AppHostBuilder();
+            return new ActivatorBuilder();
         }
 
         #endregion
@@ -410,20 +410,20 @@ namespace Wheatech.Hosting
         /// </summary>
         public static void Startup()
         {
-            _hostingEnvironment = new HostingEnvironment();
-            lock (_hostingEnvironment)
+            _environment = new ActivatingEnvironment();
+            lock (_environment)
             {
-                if (!string.IsNullOrEmpty(_environment))
+                if (!string.IsNullOrEmpty(_environmentName))
                 {
-                    _hostingEnvironment.Environment = _environment;
+                    _environment.Environment = _environmentName;
                 }
                 if (!string.IsNullOrEmpty(_applicationName))
                 {
-                    _hostingEnvironment.ApplicationName = _applicationName;
+                    _environment.ApplicationName = _applicationName;
                 }
                 if (_applicationVersion != null)
                 {
-                    _hostingEnvironment.ApplicationVersion = _applicationVersion;
+                    _environment.ApplicationVersion = _applicationVersion;
                 }
                 _instances = CreateInstances(SearchStartupTypes());
                 foreach (var methodName in _startupMethodNames)
@@ -442,8 +442,8 @@ namespace Wheatech.Hosting
         /// </summary>
         public static void Unload()
         {
-            if (_hostingEnvironment == null) return;
-            lock (_hostingEnvironment)
+            if (_environment == null) return;
+            lock (_environment)
             {
                 foreach (var methodName in _unloadMethodNames)
                 {
@@ -451,7 +451,7 @@ namespace Wheatech.Hosting
                 }
                 DisposeInstances();
                 _instances = null;
-                _hostingEnvironment = null;
+                _environment = null;
             }
         }
 

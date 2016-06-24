@@ -6,8 +6,8 @@
     <ProjectGuid>{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Wheatech.Hosting.Tests</RootNamespace>
-    <AssemblyName>Wheatech.Hosting.Tests</AssemblyName>
+    <RootNamespace>Wheatech.Activation.Tests</RootNamespace>
+    <AssemblyName>Wheatech.Activation.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -74,9 +74,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Wheatech.Hosting.csproj">
+    <ProjectReference Include="..\..\src\Wheatech.Activation.csproj">
       <Project>{372427ea-7535-42b7-886d-e254e67670ce}</Project>
-      <Name>Wheatech.Hosting</Name>
+      <Name>Wheatech.Activation</Name>
     </ProjectReference>
     <ProjectReference Include="..\ReferenceAssembly\ReferenceAssembly.csproj">
       <Project>{568f6d31-cd84-40ae-92a5-a4731f86cf5b}</Project>

@@ -1,5 +1,5 @@
 ﻿using ReferenceAssembly;
-using Wheatech.Hosting;
+using Wheatech.Activation;
 
 [assembly:AssemblyStartup(typeof(AssemblyLoader))]
 
@@ -7,7 +7,7 @@ namespace ReferenceAssembly
 {
     public class AssemblyLoader
     {
-        public AssemblyLoader(IHostingEnvironment environment)
+        public AssemblyLoader(IActivatingEnvironment environment)
         {
             AssemblyEnvironment.Environment = environment.Environment;
             AssemblyEnvironment.ApplicationName = environment.ApplicationName;

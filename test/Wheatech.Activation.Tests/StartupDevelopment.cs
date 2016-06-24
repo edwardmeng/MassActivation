@@ -1,10 +1,10 @@
 ﻿using ReferenceAssembly;
 
-namespace Wheatech.Hosting.Tests
+namespace Wheatech.Activation.Tests
 {
     public class StartupDevelopment
     {
-        public StartupDevelopment(IHostingEnvironment environment, IAppContext context)
+        public StartupDevelopment(IActivatingEnvironment environment, IAppContext context)
         {
             context.UserName = "Wheatech";
         }

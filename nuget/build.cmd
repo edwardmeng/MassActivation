@@ -19,11 +19,11 @@ set VisualStudioVersion=14.0
 REM Package restore
 echo.
 echo Running package restore...
-call :ExecuteCmd ..\tools\nuget.exe restore ..\Wheatech.Hosting.sln -OutputDirectory ..\packages -NonInteractive -ConfigFile nuget.config
+call :ExecuteCmd ..\tools\nuget.exe restore ..\Wheatech.Activation.sln -OutputDirectory ..\packages -NonInteractive -ConfigFile nuget.config
 IF %ERRORLEVEL% NEQ 0 goto error
 
 echo Building solution...
-call :ExecuteCmd %msbuild% "..\Wheatech.Hosting.sln" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
+call :ExecuteCmd %msbuild% "..\Wheatech.Activation.sln" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
 IF %ERRORLEVEL% NEQ 0 goto error
 
 echo Packaging...
@@ -33,10 +33,10 @@ if not exist %libtmp% mkdir %libtmp%
 if not exist %packagestmp% mkdir %packagestmp%
 
 if not exist %libtmp%\net461 mkdir %libtmp%\net461
-copy ..\src\bin\%config%\Wheatech.Hosting.dll %libtmp%\net461 /Y
-copy ..\src\bin\%config%\Wheatech.Hosting.xml %libtmp%\net461 /Y
+copy ..\src\bin\%config%\Wheatech.Activation.dll %libtmp%\net461 /Y
+copy ..\src\bin\%config%\Wheatech.Activation.xml %libtmp%\net461 /Y
 
-call :ExecuteCmd ..\tools\nuget.exe pack "%cd%\Wheatech.Hosting.nuspec" -OutputDirectory %packagestmp% %version%
+call :ExecuteCmd ..\tools\nuget.exe pack "%cd%\Wheatech.Activation.nuspec" -OutputDirectory %packagestmp% %version%
 IF %ERRORLEVEL% NEQ 0 goto error
 
 rmdir %libtmp% /S /Q

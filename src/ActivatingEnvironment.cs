@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using System.Runtime.Versioning;
 
-namespace Wheatech.Hosting
+namespace Wheatech.Activation
 {
-    internal class HostingEnvironment : IHostingEnvironment
+    internal class ActivatingEnvironment : IActivatingEnvironment
     {
         private readonly Hashtable _environment = new Hashtable();
 
-        internal HostingEnvironment()
+        internal ActivatingEnvironment()
         {
             Environment = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? EnvironmentName.Production;
             var entryAssembly = Assembly.GetEntryAssembly();
@@ -20,7 +18,7 @@ namespace Wheatech.Hosting
                 ApplicationName = entryAssembly.GetName().Name;
                 ApplicationVersion = entryAssembly.GetName().Version;
             }
-            Components.Add(typeof(IHostingEnvironment), this);
+            Components.Add(typeof(IActivatingEnvironment), this);
         }
 
         public object this[string name]
@@ -51,7 +49,7 @@ namespace Wheatech.Hosting
 
         public IDictionary<Type, object> Components { get; } = new Dictionary<Type, object>();
 
-        public IHostingEnvironment Use(Type serviceType, object instance)
+        public IActivatingEnvironment Use(Type serviceType, object instance)
         {
             Components[serviceType] = instance;
             return this;

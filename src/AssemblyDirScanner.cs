@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Wheatech.Hosting
+namespace Wheatech.Activation
 {
     internal class AssemblyDirScanner: IEnumerable<Assembly>
     {

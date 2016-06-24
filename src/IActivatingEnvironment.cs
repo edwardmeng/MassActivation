@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace Wheatech.Hosting
+namespace Wheatech.Activation
 {
     /// <summary>
     /// Provides information about the hosting environment an application is running in.
     /// </summary>
-    public interface IHostingEnvironment
+    public interface IActivatingEnvironment
     {
         /// <summary>
         /// Gets or sets the environment variable by using the specified name.
@@ -39,7 +39,7 @@ namespace Wheatech.Hosting
         /// </summary>
         /// <param name="serviceType">The requested type of the component.</param>
         /// <param name="instance">The instance of the component.</param>
-        /// <returns>The <see cref="IHostingEnvironment"/>.</returns>
-        IHostingEnvironment Use(Type serviceType, object instance);
+        /// <returns>The <see cref="IActivatingEnvironment"/>.</returns>
+        IActivatingEnvironment Use(Type serviceType, object instance);
     }
 }

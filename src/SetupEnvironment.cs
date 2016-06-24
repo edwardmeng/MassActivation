@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.Versioning;
 
-namespace Wheatech.Hosting
+namespace Wheatech.Activation
 {
     /// <summary>
     /// Provides the informations for the application setup environment.
