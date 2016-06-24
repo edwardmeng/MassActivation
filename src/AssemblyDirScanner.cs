@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security;
 
 namespace Wheatech.Activation
 {
@@ -36,12 +38,14 @@ namespace Wheatech.Activation
                     {
                         assembly = Assembly.Load(AssemblyName.GetAssemblyName(file));
                     }
-                    catch (BadImageFormatException)
+                    catch (Exception ex)
+                        when (
+                            ex is BadImageFormatException || ex is Win32Exception || ex is ArgumentException || ex is FileNotFoundException ||
+                            ex is PathTooLongException || ex is SecurityException)
                     {
                         // Not a managed dll/exe
                         continue;
                     }
-
                     yield return assembly;
                 }
             }
