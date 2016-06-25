@@ -11,7 +11,7 @@ namespace Wheatech.Activation
 
         internal ActivatingEnvironment()
         {
-            Environment = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? EnvironmentName.Production;
+            Environment = System.Environment.GetEnvironmentVariable("ACTIVATION_ENVIRONMENT") ?? EnvironmentName.Production;
             var entryAssembly = Assembly.GetEntryAssembly();
             if (entryAssembly != null)
             {

@@ -184,10 +184,10 @@ namespace Wheatech.Activation
         {
             if (_activators == null) return;
             var activators = from activator in _activators
-                            let method = LookupDisposeMethod(activator)
-                            where method != null
-                            orderby method.Priority
-                            select activator;
+                             let method = LookupDisposeMethod(activator)
+                             where method != null
+                             orderby method.Priority
+                             select activator;
             foreach (var instance in activators)
             {
                 (instance.TargetInstance as IDisposable)?.Dispose();
@@ -196,17 +196,17 @@ namespace Wheatech.Activation
 
         private static void OnDomainUnload(object sender, EventArgs e)
         {
-            Unload();
+            Shutdown();
         }
 
         private static void OnStopListening(object sender, EventArgs e)
         {
-            Unload();
+            Shutdown();
         }
 
         private static void OnAppDomainShutdown(object sender, BuildManagerHostUnloadEventArgs args)
         {
-            Unload();
+            Shutdown();
         }
 
         #endregion
@@ -454,6 +454,7 @@ namespace Wheatech.Activation
         /// </summary>
         public static void Startup()
         {
+            if (_environment != null) return;
             _environment = new ActivatingEnvironment();
             lock (_environment)
             {
@@ -485,9 +486,9 @@ namespace Wheatech.Activation
         }
 
         /// <summary>
-        /// Unload the hosting application.
+        /// Shutdown the hosting application.
         /// </summary>
-        public static void Unload()
+        public static void Shutdown()
         {
             if (_environment == null) return;
             lock (_environment)
