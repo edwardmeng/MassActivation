@@ -22,15 +22,15 @@ namespace Wheatech.Activation
             return this;
         }
 
-        public IActivatorBuilder UseStartSteps(params string[] methodNames)
+        public IActivatorBuilder UseStartupSteps(params string[] methodNames)
         {
-            ApplicationActivator.UseStartSteps(methodNames);
+            ApplicationActivator.UseStartupSteps(methodNames);
             return this;
         }
 
-        public IActivatorBuilder UseUnloadSteps(params string[] methodNames)
+        public IActivatorBuilder UseShutdownSteps(params string[] methodNames)
         {
-            ApplicationActivator.UseUnloadSteps(methodNames);
+            ApplicationActivator.UseShutdownSteps(methodNames);
             return this;
         }
 

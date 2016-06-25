@@ -13,7 +13,7 @@ namespace Wheatech.Activation.Tests
                 .UseEnvironment(EnvironmentName.Development)
                 .UseApplicationName("Wheatech.Activation")
                 .UseApplicationVersion(new Version("1.0"))
-                .UseStartSteps().Startup();
+                .UseStartupSteps().Startup();
 
             Assert.Equal(EnvironmentName.Development, AssemblyEnvironment.Environment);
             Assert.Equal("Wheatech.Activation", AssemblyEnvironment.ApplicationName);

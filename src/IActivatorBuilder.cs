@@ -33,14 +33,14 @@ namespace Wheatech.Activation
         /// </summary>
         /// <param name="methodNames">The method name to startup the hosting appliction.</param>
         /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
-        IActivatorBuilder UseStartSteps(params string[] methodNames);
+        IActivatorBuilder UseStartupSteps(params string[] methodNames);
 
         /// <summary>
-        /// Specifiy the unload method names to be used by the hosting application.
+        /// Specifiy the shutdown method names to be used by the hosting application.
         /// </summary>
-        /// <param name="methodNames">The method name to unload the hosting appliction.</param>
+        /// <param name="methodNames">The method name to shutdown the hosting appliction.</param>
         /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
-        IActivatorBuilder UseUnloadSteps(params string[] methodNames);
+        IActivatorBuilder UseShutdownSteps(params string[] methodNames);
 
         /// <summary>
         /// Startup the hosting application.
