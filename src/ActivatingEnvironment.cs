@@ -45,8 +45,6 @@ namespace Wheatech.Activation
             set { this["ApplicationVersion"] = value; }
         }
 
-        public SetupEnvironment Setup { get; } = new SetupEnvironment();
-
         public IDictionary<Type, object> Components { get; } = new Dictionary<Type, object>();
 
         public IActivatingEnvironment Use(Type serviceType, object instance)

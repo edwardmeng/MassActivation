@@ -30,11 +30,6 @@ namespace Wheatech.Activation
         Version ApplicationVersion { get; set; }
 
         /// <summary>
-        /// Get the information about the application setup.
-        /// </summary>
-        SetupEnvironment Setup { get; }
-
-        /// <summary>
         /// Specify the component to be used by the hosting application.
         /// </summary>
         /// <param name="serviceType">The requested type of the component.</param>
