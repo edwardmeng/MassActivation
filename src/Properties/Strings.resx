@@ -139,12 +139,12 @@
     <value>The activator type {0} for the assembly {1} cannot be generic type.</value>
   </data>
   <data name="InvalidConstructorParameter" xml:space="preserve">
-    <value>The parameter {0} for the constructor of the startup type {1} cannot be out or ref.</value>
+    <value>The parameter {0} for the instance constructor of the activator type {1} cannot be out or ref.</value>
   </data>
   <data name="InvalidMethodParameter" xml:space="preserve">
-    <value>The parameter {0} for the method {1} in the startup type {2} cannot be out or ref.</value>
+    <value>The parameter {0} for the method {1} in the activator type {2} cannot be out or ref.</value>
   </data>
   <data name="NoPublicConstructor" xml:space="preserve">
-    <value>Cannot find public constructor for the startup type {0}.</value>
+    <value>Cannot find public instance constructor for the activator type {0}.</value>
   </data>
 </root>

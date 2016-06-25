@@ -124,7 +124,7 @@ namespace Wheatech.Activation.Properties {
         }
         
         /// <summary>
-        ///   查找类似 The parameter {0} for the constructor of the startup type {1} cannot be out or ref. 的本地化字符串。
+        ///   查找类似 The parameter {0} for the instance constructor of the activator type {1} cannot be out or ref. 的本地化字符串。
         /// </summary>
         internal static string InvalidConstructorParameter {
             get {
@@ -133,7 +133,7 @@ namespace Wheatech.Activation.Properties {
         }
         
         /// <summary>
-        ///   查找类似 The parameter {0} for the method {1} in the startup type {2} cannot be out or ref. 的本地化字符串。
+        ///   查找类似 The parameter {0} for the method {1} in the activator type {2} cannot be out or ref. 的本地化字符串。
         /// </summary>
         internal static string InvalidMethodParameter {
             get {
@@ -142,7 +142,7 @@ namespace Wheatech.Activation.Properties {
         }
         
         /// <summary>
-        ///   查找类似 Cannot find public constructor for the startup type {0}. 的本地化字符串。
+        ///   查找类似 Cannot find public instance constructor for the activator type {0}. 的本地化字符串。
         /// </summary>
         internal static string NoPublicConstructor {
             get {
