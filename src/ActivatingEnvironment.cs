@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Reflection;
 
 namespace Wheatech.Activation
@@ -51,6 +52,23 @@ namespace Wheatech.Activation
         {
             Components[serviceType] = instance;
             return this;
+        }
+
+        public IActivatingEnvironment Remove(Type serviceType)
+        {
+            Components.Remove(serviceType);
+            return this;
+        }
+
+        public object Get(Type serviceType)
+        {
+            object instance;
+            return Components.TryGetValue(serviceType, out instance) ? instance : null;
+        }
+
+        public IDictionary<Type, object> GetAll()
+        {
+            return new ReadOnlyDictionary<Type, object>(Components);
         }
     }
 }

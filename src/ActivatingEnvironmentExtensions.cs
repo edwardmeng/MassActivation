@@ -173,5 +173,20 @@ namespace Wheatech.Activation
             }
             return environment.Use(typeof(T), instance);
         }
+
+        /// <summary>
+        /// Removes the registered component by using service type.
+        /// </summary>
+        /// <typeparam name="T">The registered type of the component.</typeparam>
+        /// <param name="environment">An instance of <see cref="IActivatingEnvironment"/>.</param>
+        /// <returns>The <see cref="IActivatingEnvironment"/>.</returns>
+        public static IActivatingEnvironment Remove<T>(this IActivatingEnvironment environment)
+        {
+            if (environment == null)
+            {
+                throw new ArgumentNullException(nameof(environment));
+            }
+            return environment.Remove(typeof(T));
+        }
     }
 }
