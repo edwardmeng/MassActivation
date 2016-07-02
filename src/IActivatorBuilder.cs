@@ -43,6 +43,36 @@ namespace Wheatech.Activation
         IActivatorBuilder UseShutdownSteps(params string[] methodNames);
 
         /// <summary>
+        /// Specify the component to be used by the hosting application.
+        /// </summary>
+        /// <param name="serviceType">The requested type of the component.</param>
+        /// <param name="instance">The instance of the component.</param>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        IActivatorBuilder UseService(Type serviceType, object instance);
+
+        /// <summary>
+        /// Specify the component to be used by the hosting application.
+        /// </summary>
+        /// <typeparam name="T">The requested type of the component.</typeparam>
+        /// <param name="instance">The instance of the component.</param>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        IActivatorBuilder UseService<T>(T instance);
+
+        /// <summary>
+        /// Removes the registered component by using service type.
+        /// </summary>
+        /// <param name="serviceType">The registered type of the component.</param>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        IActivatorBuilder RemoveService(Type serviceType);
+
+        /// <summary>
+        /// Removes the registered component by using service type.
+        /// </summary>
+        /// <typeparam name="T">The registered type of the component.</typeparam>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        IActivatorBuilder RemoveService<T>();
+
+        /// <summary>
         /// Startup the hosting application.
         /// </summary>
         void Startup();

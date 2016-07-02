@@ -14,8 +14,7 @@ namespace Wheatech.Activation
         /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
         public IActivatorBuilder UseEnvironment(string environmentName)
         {
-            ApplicationActivator.UseEnvironment(environmentName);
-            return this;
+            return ApplicationActivator.UseEnvironment(environmentName);
         }
 
         /// <summary>
@@ -25,8 +24,7 @@ namespace Wheatech.Activation
         /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
         public IActivatorBuilder UseApplicationName(string applicationName)
         {
-            ApplicationActivator.UseApplicationName(applicationName);
-            return this;
+            return ApplicationActivator.UseApplicationName(applicationName);
         }
 
         /// <summary>
@@ -36,8 +34,7 @@ namespace Wheatech.Activation
         /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
         public IActivatorBuilder UseApplicationVersion(Version applicationVersion)
         {
-            ApplicationActivator.UseApplicationVersion(applicationVersion);
-            return this;
+            return ApplicationActivator.UseApplicationVersion(applicationVersion);
         }
 
         /// <summary>
@@ -47,8 +44,7 @@ namespace Wheatech.Activation
         /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
         public IActivatorBuilder UseStartupSteps(params string[] methodNames)
         {
-            ApplicationActivator.UseStartupSteps(methodNames);
-            return this;
+            return ApplicationActivator.UseStartupSteps(methodNames);
         }
 
         /// <summary>
@@ -58,8 +54,49 @@ namespace Wheatech.Activation
         /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
         public IActivatorBuilder UseShutdownSteps(params string[] methodNames)
         {
-            ApplicationActivator.UseShutdownSteps(methodNames);
-            return this;
+            return ApplicationActivator.UseShutdownSteps(methodNames);
+        }
+
+        /// <summary>
+        /// Specify the component to be used by the hosting application.
+        /// </summary>
+        /// <param name="serviceType">The requested type of the component.</param>
+        /// <param name="instance">The instance of the component.</param>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public IActivatorBuilder UseService(Type serviceType, object instance)
+        {
+            return ApplicationActivator.UseService(serviceType, instance);
+        }
+
+        /// <summary>
+        /// Specify the component to be used by the hosting application.
+        /// </summary>
+        /// <typeparam name="T">The requested type of the component.</typeparam>
+        /// <param name="instance">The instance of the component.</param>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public IActivatorBuilder UseService<T>(T instance)
+        {
+            return ApplicationActivator.UseService(instance);
+        }
+
+        /// <summary>
+        /// Removes the registered component by using service type.
+        /// </summary>
+        /// <param name="serviceType">The registered type of the component.</param>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public IActivatorBuilder RemoveService(Type serviceType)
+        {
+            return ApplicationActivator.RemoveService(serviceType);
+        }
+
+        /// <summary>
+        /// Removes the registered component by using service type.
+        /// </summary>
+        /// <typeparam name="T">The registered type of the component.</typeparam>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public IActivatorBuilder RemoveService<T>()
+        {
+            return ApplicationActivator.RemoveService<T>();
         }
 
         /// <summary>

@@ -189,14 +189,6 @@ namespace Wheatech.Activation
 
         #region Shutdown
 
-        private static ActivationMetadata LookupDisposeMethod(ActivationMetadata type)
-        {
-            var targetType = (Type)type.TargetMember;
-            if (typeof(IDisposable).IsAssignableFrom(targetType)) return null;
-            var disposeMethod = targetType.GetInterfaceMap(typeof(IDisposable)).TargetMethods.FirstOrDefault(method => method.Name == "Dispose");
-            return disposeMethod != null ? new ActivationMetadata(disposeMethod, type.Priority) : null;
-        }
-
         private static void DisposeInstances()
         {
             if (_activators == null) return;
@@ -465,6 +457,55 @@ namespace Wheatech.Activation
             return new ActivatorBuilder();
         }
 
+        /// <summary>
+        /// Specify the component to be used by the hosting application.
+        /// </summary>
+        /// <param name="serviceType">The requested type of the component.</param>
+        /// <param name="instance">The instance of the component.</param>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public static IActivatorBuilder UseService(Type serviceType, object instance)
+        {
+            if (_environment == null)
+            {
+                _environment = new ActivatingEnvironment();
+            }
+            _environment.Use(serviceType, instance);
+            return new ActivatorBuilder();
+        }
+
+        /// <summary>
+        /// Specify the component to be used by the hosting application.
+        /// </summary>
+        /// <typeparam name="T">The requested type of the component.</typeparam>
+        /// <param name="instance">The instance of the component.</param>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public static IActivatorBuilder UseService<T>(T instance)
+        {
+            return UseService(typeof(T), instance);
+        }
+
+        /// <summary>
+        /// Removes the registered component by using service type.
+        /// </summary>
+        /// <param name="serviceType">The registered type of the component.</param>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public static IActivatorBuilder RemoveService(Type serviceType)
+        {
+            _environment?.Remove(serviceType);
+            return new ActivatorBuilder();
+        }
+
+        /// <summary>
+        /// Removes the registered component by using service type.
+        /// </summary>
+        /// <typeparam name="T">The registered type of the component.</typeparam>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public static IActivatorBuilder RemoveService<T>()
+        {
+            RemoveService(typeof(T));
+            return new ActivatorBuilder();
+        }
+
         #endregion
 
         #region Entry Points
@@ -474,10 +515,13 @@ namespace Wheatech.Activation
         /// </summary>
         public static void Startup()
         {
-            if (_environment != null) return;
-            _environment = new ActivatingEnvironment();
+            if (_environment == null)
+            {
+                _environment = new ActivatingEnvironment();
+            }
             lock (_environment)
             {
+                // Apply the configuration variables to environment.
                 if (!string.IsNullOrEmpty(_environmentName))
                 {
                     _environment.Environment = _environmentName;
@@ -491,12 +535,14 @@ namespace Wheatech.Activation
                     _environment.ApplicationVersion = _applicationVersion;
                 }
                 _activators = SearchActivatorTypes().ToList();
+                // Startup steps: static constructor, instance constructors, startup methods.
                 InvokeClassConstructors(_activators);
                 CreateInstances(_activators);
                 foreach (var methodName in _startupMethodNames)
                 {
                     InvokeMethods(_activators, methodName, true);
                 }
+                // Attach events to shutdown the application.
                 AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
                 typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
                     .AddMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
