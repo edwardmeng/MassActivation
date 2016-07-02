@@ -24,7 +24,7 @@ namespace Wheatech.Activation
         private static string[] _startupMethodNames = { "Configuration" };
         private static string[] _shutdownMethodNames = { "Unload" };
         private static ActivatingEnvironment _environment;
-        private static ActivationMetadata[] _activators;
+        private static List<ActivationMetadata> _activators;
 
         #endregion
 
@@ -32,48 +32,58 @@ namespace Wheatech.Activation
 
         private static IEnumerable<ActivationMetadata> SearchActivatorTypes()
         {
-            if (_environment == null) yield break;
-            foreach (var assembly in _environment.GetAssemblies())
+            if (_environment == null)
             {
-                // Detect the startup type declared using AssemblyStartupAttribute
-                AssemblyActivatorAttribute attribute;
-                try
+                return Enumerable.Empty<ActivationMetadata>();
+            }
+            return from assembly in _environment.GetAssemblies()
+                   let metadata = SearchActivator(assembly)
+                   where metadata != null
+                   select metadata;
+        }
+
+        private static ActivationMetadata SearchActivator(Assembly assembly)
+        {
+            if (_environment == null) return null;
+            // Detect the startup type declared using AssemblyStartupAttribute
+            AssemblyActivatorAttribute attribute;
+            try
+            {
+                attribute = assembly.GetCustomAttribute<AssemblyActivatorAttribute>();
+            }
+            catch (CustomAttributeFormatException)
+            {
+                return null;
+            }
+            var startupAssemblyName = assembly.GetName().Name;
+            if (attribute != null)
+            {
+                if (attribute.StartupType.IsGenericTypeDefinition)
                 {
-                    attribute = assembly.GetCustomAttribute<AssemblyActivatorAttribute>();
+                    throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Startup_GenericType, TypeNameHelper.GetTypeDisplayName(attribute.StartupType), startupAssemblyName));
                 }
-                catch (CustomAttributeFormatException)
+                if (attribute.StartupType.IsInterface || attribute.StartupType.IsAbstract)
                 {
-                    continue;
+                    throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_AbstractOrInterface, TypeNameHelper.GetTypeDisplayName(attribute.StartupType), startupAssemblyName));
                 }
-                var startupAssemblyName = assembly.GetName().Name;
-                if (attribute != null)
+                return new ActivationMetadata(attribute.StartupType);
+            }
+            else
+            {
+                // Detect the startup type by using the convension name.
+                var startupNameWithoutEnv = "Startup";
+                var startupNameWithEnv = "Startup" + _environment.Environment;
+                var startupType =
+                    assembly.GetType(startupNameWithEnv, false) ??
+                    assembly.GetType(startupAssemblyName + "." + startupNameWithEnv, false) ??
+                    assembly.GetType(startupNameWithoutEnv, false) ??
+                    assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv, false);
+                if (startupType != null && !startupType.IsGenericTypeDefinition && !startupType.IsInterface && !startupType.IsAbstract)
                 {
-                    if (attribute.StartupType.IsGenericTypeDefinition)
-                    {
-                        throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Startup_GenericType, TypeNameHelper.GetTypeDisplayName(attribute.StartupType), startupAssemblyName));
-                    }
-                    if (attribute.StartupType.IsInterface || attribute.StartupType.IsAbstract)
-                    {
-                        throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_AbstractOrInterface, TypeNameHelper.GetTypeDisplayName(attribute.StartupType), startupAssemblyName));
-                    }
-                    yield return new ActivationMetadata(attribute.StartupType); ;
-                }
-                else
-                {
-                    // Detect the startup type by using the convension name.
-                    var startupNameWithoutEnv = "Startup";
-                    var startupNameWithEnv = "Startup" + _environment.Environment;
-                    var startupType =
-                        assembly.GetType(startupNameWithEnv, false) ??
-                        assembly.GetType(startupAssemblyName + "." + startupNameWithEnv, false) ??
-                        assembly.GetType(startupNameWithoutEnv, false) ??
-                        assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv, false);
-                    if (startupType != null && !startupType.IsGenericTypeDefinition && !startupType.IsInterface && !startupType.IsAbstract)
-                    {
-                        yield return new ActivationMetadata(startupType);
-                    }
+                    return new ActivationMetadata(startupType);
                 }
             }
+            return null;
         }
 
         private static ActivationMetadata LookupClassConstructor(ActivationMetadata type)
@@ -84,7 +94,12 @@ namespace Wheatech.Activation
 
         private static ActivationMetadata LookupInstanceConstructor(ActivationMetadata type)
         {
-            var constructors = ((Type)type.TargetMember).GetConstructors();
+            var targetType = (Type)type.TargetMember;
+            if (targetType.IsAbstract && targetType.IsSealed)
+            {
+                return null;
+            }
+            var constructors = targetType.GetConstructors();
             if (constructors.Length == 0)
             {
                 throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.NoPublicConstructor, TypeNameHelper.GetTypeDisplayName(type)));
@@ -99,9 +114,9 @@ namespace Wheatech.Activation
         /// <summary>
         /// Invoke static constructors according to their priority.
         /// </summary>
-        private static void InvokeClassConstructors(ActivationMetadata[] types)
+        private static void InvokeClassConstructors()
         {
-            var staticConstructors = from type in types
+            var staticConstructors = from type in _activators
                                      let constructor = LookupClassConstructor(type)
                                      where constructor != null
                                      orderby constructor.Priority
@@ -112,13 +127,23 @@ namespace Wheatech.Activation
             }
         }
 
+        private static void InvokeClassConstructor(ActivationMetadata type)
+        {
+            var constructor = LookupClassConstructor(type);
+            if (constructor != null)
+            {
+                RuntimeHelpers.RunClassConstructor(((Type)constructor.TargetMember).TypeHandle);
+            }
+        }
+
         /// <summary>
         /// Invoke instance constructors according to their priority, parameter number and parameter types.
         /// </summary>
-        private static void CreateInstances(ActivationMetadata[] types)
+        private static void CreateInstances()
         {
-            var constructors = (from type in types
+            var constructors = (from type in _activators
                                 let constructor = ValidateMethod(LookupInstanceConstructor(type))
+                                where constructor != null
                                 orderby constructor.Priority, ((MethodBase)constructor.TargetMember).GetParameters().Length
                                 select Tuple.Create(type, constructor)).ToList();
 
@@ -143,6 +168,21 @@ namespace Wheatech.Activation
             {
                 throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.CannotCreateInstances,
                     string.Join(", ", constructors.Select(x => TypeNameHelper.GetTypeDisplayName(x.Item1)))));
+            }
+        }
+
+        private static void CreateInstance(ActivationMetadata type)
+        {
+            var constructor = ValidateMethod(LookupInstanceConstructor(type));
+            if (constructor == null) return;
+            object instance;
+            if (TryCreateInstance((ConstructorInfo)constructor.TargetMember, out instance))
+            {
+                type.TargetInstance = instance;
+            }
+            else
+            {
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.CannotCreateInstances, TypeNameHelper.GetTypeDisplayName(type)));
             }
         }
 
@@ -183,12 +223,7 @@ namespace Wheatech.Activation
         private static void DisposeInstances()
         {
             if (_activators == null) return;
-            var activators = from activator in _activators
-                             let method = LookupDisposeMethod(activator)
-                             where method != null
-                             orderby method.Priority
-                             select activator;
-            foreach (var instance in activators)
+            foreach (var instance in _activators)
             {
                 (instance.TargetInstance as IDisposable)?.Dispose();
             }
@@ -339,6 +374,16 @@ namespace Wheatech.Activation
             }
         }
 
+        private static void InvokeMethod(ActivationMetadata type, string methodName)
+        {
+            var method = ValidateMethod(LookupMethod(type, methodName, _environment.Environment));
+            if (method == null) return;
+            if (!TryInvokeMethod((MethodInfo)method.TargetMember, type.TargetInstance))
+            {
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, method.TargetMember.Name, TypeNameHelper.GetTypeDisplayName(type.TargetMember)));
+            }
+        }
+
         private static bool TryInvokeMethod(MethodInfo method, object instance)
         {
             if (_environment == null) return false;
@@ -470,10 +515,9 @@ namespace Wheatech.Activation
                 {
                     _environment.ApplicationVersion = _applicationVersion;
                 }
-                var activators = SearchActivatorTypes().ToArray();
-                InvokeClassConstructors(activators);
-                CreateInstances(activators);
-                _activators = activators;
+                _activators = SearchActivatorTypes().ToList();
+                InvokeClassConstructors();
+                CreateInstances();
                 foreach (var methodName in _startupMethodNames)
                 {
                     InvokeMethods(methodName, true);
@@ -482,6 +526,32 @@ namespace Wheatech.Activation
                 typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
                     .AddMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
                 System.Web.Hosting.HostingEnvironment.StopListening += OnStopListening;
+            }
+        }
+
+        /// <summary>
+        /// Startup the specified assembly.
+        /// </summary>
+        /// <param name="assembly">The assembly to be started.</param>
+        /// <remarks>
+        /// It is useful for the startup of dynamically loaded assemblies.
+        /// </remarks>
+        public static void Startup(Assembly assembly)
+        {
+            if (_environment == null) return;
+            lock (_environment)
+            {
+                var activator = SearchActivator(assembly);
+                if (activator != null)
+                {
+                    _activators.Add(activator);
+                    InvokeClassConstructor(activator);
+                    CreateInstance(activator);
+                    foreach (var methodName in _startupMethodNames)
+                    {
+                        InvokeMethod(activator, methodName);
+                    }
+                }
             }
         }
 
@@ -500,6 +570,29 @@ namespace Wheatech.Activation
                 DisposeInstances();
                 _activators = null;
                 _environment = null;
+            }
+        }
+
+        /// <summary>
+        /// Shutdown the specified assembly.
+        /// </summary>
+        /// <param name="assembly">The assembly to be shutdown.</param>
+        /// <remarks>
+        /// It is useful for the startup of dynamically loaded assemblies.
+        /// </remarks>
+        public static void Shutdown(Assembly assembly)
+        {
+            if (_environment == null) return;
+            lock (_environment)
+            {
+                var activator = _activators.FirstOrDefault(x => ((Type) x.TargetMember).Assembly == assembly);
+                if(activator == null)return;
+                foreach (var methodName in _shutdownMethodNames)
+                {
+                    InvokeMethod(activator, methodName);
+                }
+                (activator.TargetInstance as IDisposable)?.Dispose();
+                _activators.Remove(activator);
             }
         }
 
