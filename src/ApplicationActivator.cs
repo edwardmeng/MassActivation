@@ -29,13 +29,13 @@ namespace Wheatech.Activation
 
         #region Instantiate
 
-        private static IEnumerable<ActivationMetadata> SearchActivatorTypes()
+        private static IEnumerable<ActivationMetadata> SearchActivatorTypes(IEnumerable<Assembly> assemblies)
         {
             if (_environment == null)
             {
                 return Enumerable.Empty<ActivationMetadata>();
             }
-            return from assembly in _environment.GetAssemblies()
+            return from assembly in assemblies
                    let metadata = SearchActivator(assembly)
                    where metadata != null
                    select metadata;
@@ -183,34 +183,6 @@ namespace Wheatech.Activation
             }
             instance = constructor.Invoke(arguments.ToArray());
             return true;
-        }
-
-        #endregion
-
-        #region Shutdown
-
-        private static void DisposeInstances()
-        {
-            if (_activators == null) return;
-            foreach (var instance in _activators)
-            {
-                (instance.TargetInstance as IDisposable)?.Dispose();
-            }
-        }
-
-        private static void OnDomainUnload(object sender, EventArgs e)
-        {
-            Shutdown();
-        }
-
-        private static void OnStopListening(object sender, EventArgs e)
-        {
-            Shutdown();
-        }
-
-        private static void OnAppDomainShutdown(object sender, BuildManagerHostUnloadEventArgs args)
-        {
-            Shutdown();
         }
 
         #endregion
@@ -508,7 +480,7 @@ namespace Wheatech.Activation
 
         #endregion
 
-        #region Entry Points
+        #region Startup
 
         /// <summary>
         /// Startup the hosting application.
@@ -534,14 +506,8 @@ namespace Wheatech.Activation
                 {
                     _environment.ApplicationVersion = _applicationVersion;
                 }
-                _activators = SearchActivatorTypes().ToList();
-                // Startup steps: static constructor, instance constructors, startup methods.
-                InvokeClassConstructors(_activators);
-                CreateInstances(_activators);
-                foreach (var methodName in _startupMethodNames)
-                {
-                    InvokeMethods(_activators, methodName, true);
-                }
+                _activators = SearchActivatorTypes(_environment.GetAssemblies()).ToList();
+                Startup(_activators.ToArray());
                 // Attach events to shutdown the application.
                 AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
                 typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
@@ -551,30 +517,39 @@ namespace Wheatech.Activation
         }
 
         /// <summary>
-        /// Startup the specified assembly.
+        /// Startup the specified assemblies.
         /// </summary>
-        /// <param name="assembly">The assembly to be started.</param>
+        /// <param name="assemblies">The assemblies to be started.</param>
         /// <remarks>
         /// It is useful for the startup of dynamically loaded assemblies.
         /// </remarks>
-        public static void Startup(Assembly assembly)
+        public static void Startup(params Assembly[] assemblies)
         {
             if (_environment == null) return;
             lock (_environment)
             {
-                var activator = SearchActivator(assembly);
-                if (activator != null)
-                {
-                    _activators.Add(activator);
-                    InvokeClassConstructors(new[] { activator });
-                    CreateInstances(new[] { activator });
-                    foreach (var methodName in _startupMethodNames)
-                    {
-                        InvokeMethods(new[] { activator }, methodName, true);
-                    }
-                }
+                var activators = SearchActivatorTypes(assemblies).ToArray();
+                _activators.AddRange(activators);
+                Startup(activators);
             }
         }
+
+        /// <summary>
+        /// Process startup steps: static constructor, instance constructors, startup methods.
+        /// </summary>
+        private static void Startup(ActivationMetadata[] types)
+        {
+            InvokeClassConstructors(types);
+            CreateInstances(types);
+            foreach (var methodName in _startupMethodNames)
+            {
+                InvokeMethods(types, methodName, true);
+            }
+        }
+
+        #endregion
+
+        #region Shutdown
 
         /// <summary>
         /// Shutdown the hosting application.
@@ -584,37 +559,69 @@ namespace Wheatech.Activation
             if (_environment == null) return;
             lock (_environment)
             {
-                foreach (var methodName in _shutdownMethodNames)
-                {
-                    InvokeMethods(_activators, methodName, false);
-                }
-                DisposeInstances();
+                Shutdown(_activators.ToArray());
                 _activators = null;
                 _environment = null;
             }
         }
 
         /// <summary>
-        /// Shutdown the specified assembly.
+        /// Shutdown the specified assemblies.
         /// </summary>
-        /// <param name="assembly">The assembly to be shutdown.</param>
+        /// <param name="assemblies">The assemblies to be shutdown.</param>
         /// <remarks>
         /// It is useful for the startup of dynamically loaded assemblies.
         /// </remarks>
-        public static void Shutdown(Assembly assembly)
+        public static void Shutdown(params Assembly[] assemblies)
         {
             if (_environment == null) return;
             lock (_environment)
             {
-                var activator = _activators.FirstOrDefault(x => ((Type)x.TargetMember).Assembly == assembly);
-                if (activator == null) return;
-                foreach (var methodName in _shutdownMethodNames)
-                {
-                    InvokeMethods(new[] { activator }, methodName, false);
-                }
-                (activator.TargetInstance as IDisposable)?.Dispose();
+                Shutdown((from metadata in _activators
+                          join assembly in assemblies on ((Type)metadata.TargetMember).Assembly equals assembly
+                          select metadata).ToArray());
+            }
+        }
+
+        /// <summary>
+        /// Process the shutdown steps.
+        /// </summary>
+        private static void Shutdown(ActivationMetadata[] types)
+        {
+            if (types == null) return;
+            foreach (var methodName in _shutdownMethodNames)
+            {
+                InvokeMethods(types, methodName, false);
+            }
+            DisposeInstances(types);
+            foreach (var activator in types)
+            {
                 _activators.Remove(activator);
             }
+        }
+
+        private static void DisposeInstances(IEnumerable<ActivationMetadata> types)
+        {
+            if (types == null) return;
+            foreach (var instance in types)
+            {
+                (instance.TargetInstance as IDisposable)?.Dispose();
+            }
+        }
+
+        private static void OnDomainUnload(object sender, EventArgs e)
+        {
+            Shutdown();
+        }
+
+        private static void OnStopListening(object sender, EventArgs e)
+        {
+            Shutdown();
+        }
+
+        private static void OnAppDomainShutdown(object sender, BuildManagerHostUnloadEventArgs args)
+        {
+            Shutdown();
         }
 
         #endregion
