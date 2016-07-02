@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Web;
 using System.Web.Compilation;
 using Wheatech.Activation.Properties;
@@ -114,9 +113,10 @@ namespace Wheatech.Activation
         /// <summary>
         /// Invoke static constructors according to their priority.
         /// </summary>
-        private static void InvokeClassConstructors()
+        private static void InvokeClassConstructors(IEnumerable<ActivationMetadata> types)
         {
-            var staticConstructors = from type in _activators
+            if (_environment == null || types == null) return;
+            var staticConstructors = from type in types
                                      let constructor = LookupClassConstructor(type)
                                      where constructor != null
                                      orderby constructor.Priority
@@ -127,21 +127,13 @@ namespace Wheatech.Activation
             }
         }
 
-        private static void InvokeClassConstructor(ActivationMetadata type)
-        {
-            var constructor = LookupClassConstructor(type);
-            if (constructor != null)
-            {
-                RuntimeHelpers.RunClassConstructor(((Type)constructor.TargetMember).TypeHandle);
-            }
-        }
-
         /// <summary>
         /// Invoke instance constructors according to their priority, parameter number and parameter types.
         /// </summary>
-        private static void CreateInstances()
+        private static void CreateInstances(IEnumerable<ActivationMetadata> types)
         {
-            var constructors = (from type in _activators
+            if (_environment == null || types == null) return;
+            var constructors = (from type in types
                                 let constructor = ValidateMethod(LookupInstanceConstructor(type))
                                 where constructor != null
                                 orderby constructor.Priority, ((MethodBase)constructor.TargetMember).GetParameters().Length
@@ -168,21 +160,6 @@ namespace Wheatech.Activation
             {
                 throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.CannotCreateInstances,
                     string.Join(", ", constructors.Select(x => TypeNameHelper.GetTypeDisplayName(x.Item1)))));
-            }
-        }
-
-        private static void CreateInstance(ActivationMetadata type)
-        {
-            var constructor = ValidateMethod(LookupInstanceConstructor(type));
-            if (constructor == null) return;
-            object instance;
-            if (TryCreateInstance((ConstructorInfo)constructor.TargetMember, out instance))
-            {
-                type.TargetInstance = instance;
-            }
-            else
-            {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.CannotCreateInstances, TypeNameHelper.GetTypeDisplayName(type)));
             }
         }
 
@@ -334,10 +311,10 @@ namespace Wheatech.Activation
             return metadata;
         }
 
-        private static void InvokeMethods(string methodName, bool startup)
+        private static void InvokeMethods(IEnumerable<ActivationMetadata> types, string methodName, bool startup)
         {
-            if (_environment == null || _activators == null) return;
-            var methods = from instance in _activators
+            if (_environment == null || types == null) return;
+            var methods = from instance in types
                           let method = ValidateMethod(LookupMethod(instance, methodName, _environment.Environment))
                           where method != null
                           orderby method.Priority, ((MethodBase)method.TargetMember).GetParameters().Length
@@ -367,20 +344,18 @@ namespace Wheatech.Activation
             }
             if (methodList.Count > 0)
             {
-                throw new AggregateException(
-                    methodList.Select(method =>
-                            new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, method.Item2.TargetMember.Name,
-                                TypeNameHelper.GetTypeDisplayName(method.Item1.TargetMember)))));
-            }
-        }
-
-        private static void InvokeMethod(ActivationMetadata type, string methodName)
-        {
-            var method = ValidateMethod(LookupMethod(type, methodName, _environment.Environment));
-            if (method == null) return;
-            if (!TryInvokeMethod((MethodInfo)method.TargetMember, type.TargetInstance))
-            {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, method.TargetMember.Name, TypeNameHelper.GetTypeDisplayName(type.TargetMember)));
+                if (methodList.Count == 1)
+                {
+                    throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, methodList[0].Item2.TargetMember.Name,
+                        TypeNameHelper.GetTypeDisplayName(methodList[0].Item1.TargetMember)));
+                }
+                else
+                {
+                    throw new AggregateException(
+                        methodList.Select(method =>
+                                new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, method.Item2.TargetMember.Name,
+                                    TypeNameHelper.GetTypeDisplayName(method.Item1.TargetMember)))));
+                }
             }
         }
 
@@ -516,13 +491,13 @@ namespace Wheatech.Activation
                     _environment.ApplicationVersion = _applicationVersion;
                 }
                 _activators = SearchActivatorTypes().ToList();
-                InvokeClassConstructors();
-                CreateInstances();
+                InvokeClassConstructors(_activators);
+                CreateInstances(_activators);
                 foreach (var methodName in _startupMethodNames)
                 {
-                    InvokeMethods(methodName, true);
+                    InvokeMethods(_activators, methodName, true);
                 }
-                Thread.GetDomain().DomainUnload += OnDomainUnload;
+                AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
                 typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
                     .AddMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
                 System.Web.Hosting.HostingEnvironment.StopListening += OnStopListening;
@@ -545,11 +520,11 @@ namespace Wheatech.Activation
                 if (activator != null)
                 {
                     _activators.Add(activator);
-                    InvokeClassConstructor(activator);
-                    CreateInstance(activator);
+                    InvokeClassConstructors(new[] { activator });
+                    CreateInstances(new[] { activator });
                     foreach (var methodName in _startupMethodNames)
                     {
-                        InvokeMethod(activator, methodName);
+                        InvokeMethods(new[] { activator }, methodName, true);
                     }
                 }
             }
@@ -565,7 +540,7 @@ namespace Wheatech.Activation
             {
                 foreach (var methodName in _shutdownMethodNames)
                 {
-                    InvokeMethods(methodName, false);
+                    InvokeMethods(_activators, methodName, false);
                 }
                 DisposeInstances();
                 _activators = null;
@@ -585,11 +560,11 @@ namespace Wheatech.Activation
             if (_environment == null) return;
             lock (_environment)
             {
-                var activator = _activators.FirstOrDefault(x => ((Type) x.TargetMember).Assembly == assembly);
-                if(activator == null)return;
+                var activator = _activators.FirstOrDefault(x => ((Type)x.TargetMember).Assembly == assembly);
+                if (activator == null) return;
                 foreach (var methodName in _shutdownMethodNames)
                 {
-                    InvokeMethod(activator, methodName);
+                    InvokeMethods(new[] { activator }, methodName, false);
                 }
                 (activator.TargetInstance as IDisposable)?.Dispose();
                 _activators.Remove(activator);
