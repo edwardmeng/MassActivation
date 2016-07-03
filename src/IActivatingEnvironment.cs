@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Wheatech.Activation
 {
@@ -52,11 +50,5 @@ namespace Wheatech.Activation
         /// <param name="serviceType">The registered type of the component.</param>
         /// <returns>The instance of the component.</returns>
         object Get(Type serviceType);
-
-        /// <summary>
-        /// Gets all the registered components.
-        /// </summary>
-        /// <returns>All the registered components.</returns>
-        IDictionary<Type, object> GetAll();
     }
 }
