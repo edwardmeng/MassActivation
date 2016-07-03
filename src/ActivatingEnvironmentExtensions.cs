@@ -201,7 +201,7 @@ namespace Wheatech.Activation
             {
                 throw new ArgumentNullException(nameof(environment));
             }
-            return (T) environment.Get(typeof(T));
+            return (T)(environment.Get(typeof(T)) ?? default(T));
         }
     }
 }
