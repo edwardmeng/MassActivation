@@ -125,11 +125,8 @@ namespace Wheatech.Activation
                 {
                 }
             }
-            if (assemblies == null)
-            {
-                LoadApplicationAssemblies();
-            }
-            return AppDomain.CurrentDomain.GetAssemblies();
+            LoadApplicationAssemblies();
+            return (assemblies ?? Enumerable.Empty<Assembly>()).Union(AppDomain.CurrentDomain.GetAssemblies());
         }
 
         /// <summary>
