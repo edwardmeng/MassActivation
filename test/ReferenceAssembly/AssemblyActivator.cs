@@ -1,4 +1,5 @@
-﻿using ReferenceAssembly;
+﻿using System.Linq;
+using ReferenceAssembly;
 using Wheatech.Activation;
 
 [assembly:AssemblyActivator(typeof(AssemblyActivator))]
@@ -12,6 +13,7 @@ namespace ReferenceAssembly
             AssemblyEnvironment.Environment = environment.Environment;
             AssemblyEnvironment.ApplicationName = environment.ApplicationName;
             AssemblyEnvironment.ApplicationVersion = environment.ApplicationVersion;
+            AssemblyEnvironment.Assemblies = environment.GetAssemblies().ToArray();
 
             environment.Use<IAppContext>(new AppContext());
         }

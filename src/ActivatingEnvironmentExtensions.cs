@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Web;
-using System.Web.Compilation;
 
 namespace Wheatech.Activation
 {
@@ -67,35 +62,6 @@ namespace Wheatech.Activation
                 throw new ArgumentNullException(nameof(environment));
             }
             return environment.IsEnvironment(EnvironmentName.Staging);
-        }
-
-        /// <summary>
-        /// Returns all the assemblies to be used by the hosting application.
-        /// </summary>
-        /// <param name="environment">An instance of <see cref="IActivatingEnvironment"/>.</param>
-        /// <returns>All the assemblies to be used by the application.</returns>
-        public static IEnumerable<Assembly> GetAssemblies(this IActivatingEnvironment environment)
-        {
-            if (environment == null)
-            {
-                throw new ArgumentNullException(nameof(environment));
-            }
-            IEnumerable<Assembly> assemblies = null;
-            if (System.Web.Hosting.HostingEnvironment.IsHosted)
-            {
-                try
-                {
-                    assemblies = BuildManager.GetReferencedAssemblies().OfType<Assembly>();
-                }
-                catch (Exception ex) when (ex is InvalidOperationException || ex is HttpException)
-                {
-                }
-            }
-            if (assemblies == null)
-            {
-                assemblies = new AssemblyDirScanner();
-            }
-            return assemblies.Union(AppDomain.CurrentDomain.GetAssemblies());
         }
 
         /// <summary>

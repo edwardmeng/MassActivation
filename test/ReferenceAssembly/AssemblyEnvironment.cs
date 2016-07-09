@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace ReferenceAssembly
 {
@@ -11,5 +12,7 @@ namespace ReferenceAssembly
         public static Version ApplicationVersion { get; set; }
 
         public static string UserName { get; set; }
+
+        public static Assembly[] Assemblies { get; set; }
     }
 }

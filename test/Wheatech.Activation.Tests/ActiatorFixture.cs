@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Wheatech.Activation.Tests
 {
-    public class AppHostFixture
+    public class ActiatorFixture
     {
         [Fact]
         public void ConstructorParameters()

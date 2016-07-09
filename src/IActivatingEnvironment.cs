@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace Wheatech.Activation
 {
@@ -50,5 +52,11 @@ namespace Wheatech.Activation
         /// <param name="serviceType">The registered type of the component.</param>
         /// <returns>The instance of the component.</returns>
         object Get(Type serviceType);
+
+        /// <summary>
+        /// Returns all the assemblies to be used by the hosting application.
+        /// </summary>
+        /// <returns>All the assemblies to be used by the application.</returns>
+        IEnumerable<Assembly> GetAssemblies();
     }
 }
