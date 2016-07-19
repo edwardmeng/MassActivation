@@ -599,6 +599,14 @@ namespace Wheatech.Activation
                 _activators.Remove(activator);
             }
         }
+		
+        private void RemoveEventHandlers()
+        {
+            AppDomain.CurrentDomain.DomainUnload -= OnDomainUnload;
+            System.Web.Hosting.HostingEnvironment.StopListening -= OnStopListening;
+            typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
+              .RemoveMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
+        }
 
         private static void DisposeInstances(IEnumerable<ActivationMetadata> types)
         {
@@ -612,16 +620,19 @@ namespace Wheatech.Activation
         private static void OnDomainUnload(object sender, EventArgs e)
         {
             Shutdown();
+			RemoveEventHandlers();
         }
 
         private static void OnStopListening(object sender, EventArgs e)
         {
             Shutdown();
+			RemoveEventHandlers();
         }
 
         private static void OnAppDomainShutdown(object sender, BuildManagerHostUnloadEventArgs args)
         {
             Shutdown();
+			RemoveEventHandlers();
         }
 
         #endregion
