@@ -554,6 +554,28 @@ namespace Wheatech.Activation
         }
 
         /// <summary>
+        /// Invoke the specified methods sequentially in all the registered startup types. 
+        /// </summary>
+        /// <param name="methods">The methods to be invoked.</param>
+        public static void Invoke(params string[] methods)
+        {
+            Invoke((IEnumerable<string>)methods);
+        }
+
+        /// <summary>
+        /// Invoke the specified methods sequentially in all the registered startup types. 
+        /// </summary>
+        /// <param name="methods">The methods to be invoked.</param>
+        public static void Invoke(IEnumerable<string> methods)
+        {
+            if (_environment == null|| methods == null) return;
+            foreach (var methodName in methods)
+            {
+                InvokeMethods(_activators, methodName, true);
+            }
+        }
+
+        /// <summary>
         /// Process startup steps: static constructor, instance constructors, startup methods.
         /// </summary>
         private static void Startup(ActivationMetadata[] types)
