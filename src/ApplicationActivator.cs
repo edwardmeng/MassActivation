@@ -140,7 +140,7 @@ namespace Wheatech.Activation
                                 select Tuple.Create(type, constructor)).ToList();
 
             var instanceCount = -1;
-            while (instanceCount != 0)
+            while (instanceCount != 0 && constructors.Count > 0)
             {
                 instanceCount = 0;
                 for (int i = 0; i < constructors.Count; i++)
@@ -293,7 +293,7 @@ namespace Wheatech.Activation
             }
             var methodList = methods.ToList();
             var invokeMethodCount = -1;
-            if (invokeMethodCount != 0)
+            while (invokeMethodCount != 0 && methodList.Count > 0)
             {
                 invokeMethodCount = 0;
                 for (int i = 0; i < methodList.Count; i++)
@@ -525,11 +525,30 @@ namespace Wheatech.Activation
         /// </remarks>
         public static void Startup(params Assembly[] assemblies)
         {
+            Startup((IEnumerable<Assembly>)assemblies);
+        }
+
+        /// <summary>
+        /// Startup the specified assemblies.
+        /// </summary>
+        /// <param name="assemblies">The assemblies to be started.</param>
+        /// <remarks>
+        /// It is useful for the startup of dynamically loaded assemblies.
+        /// </remarks>
+        public static void Startup(IEnumerable<Assembly> assemblies)
+        {
             if (_environment == null) return;
             lock (_environment)
             {
                 var activators = SearchActivatorTypes(assemblies).ToArray();
-                _activators.AddRange(activators);
+                if (_activators == null)
+                {
+                    _activators = activators.ToList();
+                }
+                else
+                {
+                    _activators.AddRange(activators);
+                }
                 Startup(activators);
             }
         }
@@ -559,8 +578,11 @@ namespace Wheatech.Activation
             if (_environment == null) return;
             lock (_environment)
             {
-                Shutdown(_activators.ToArray());
-                _activators = null;
+                if (_activators != null)
+                {
+                    Shutdown(_activators.ToArray());
+                    _activators = null;
+                }
                 _environment = null;
             }
         }
@@ -574,7 +596,19 @@ namespace Wheatech.Activation
         /// </remarks>
         public static void Shutdown(params Assembly[] assemblies)
         {
-            if (_environment == null) return;
+            Shutdown((IEnumerable<Assembly>)assemblies);
+        }
+
+        /// <summary>
+        /// Shutdown the specified assemblies.
+        /// </summary>
+        /// <param name="assemblies">The assemblies to be shutdown.</param>
+        /// <remarks>
+        /// It is useful for the startup of dynamically loaded assemblies.
+        /// </remarks>
+        public static void Shutdown(IEnumerable<Assembly> assemblies)
+        {
+            if (_environment == null || _activators == null) return;
             lock (_environment)
             {
                 Shutdown((from metadata in _activators
@@ -599,8 +633,8 @@ namespace Wheatech.Activation
                 _activators.Remove(activator);
             }
         }
-		
-        private void RemoveEventHandlers()
+
+        private static void RemoveEventHandlers()
         {
             AppDomain.CurrentDomain.DomainUnload -= OnDomainUnload;
             System.Web.Hosting.HostingEnvironment.StopListening -= OnStopListening;
@@ -620,19 +654,19 @@ namespace Wheatech.Activation
         private static void OnDomainUnload(object sender, EventArgs e)
         {
             Shutdown();
-			RemoveEventHandlers();
+            RemoveEventHandlers();
         }
 
         private static void OnStopListening(object sender, EventArgs e)
         {
             Shutdown();
-			RemoveEventHandlers();
+            RemoveEventHandlers();
         }
 
         private static void OnAppDomainShutdown(object sender, BuildManagerHostUnloadEventArgs args)
         {
             Shutdown();
-			RemoveEventHandlers();
+            RemoveEventHandlers();
         }
 
         #endregion
