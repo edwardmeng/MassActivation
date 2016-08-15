@@ -7,7 +7,7 @@ set version=
 if not "%PackageVersion%" == "" (
    set version=-Version %PackageVersion%
 ) else (
-   set version=-Version 1.0.5
+   set version=-Version 1.0.0-alpha
 )
 REM Determine msbuild path
 set msbuildtmp="%ProgramFiles%\MSBuild\14.0\bin\msbuild"
@@ -19,7 +19,7 @@ set VisualStudioVersion=14.0
 REM Package restore
 echo.
 echo Running package restore...
-call :ExecuteCmd ..\tools\nuget.exe restore ..\MassActivation.sln -OutputDirectory ..\packages -NonInteractive -ConfigFile nuget.config
+call :ExecuteCmd nuget.exe restore ..\MassActivation.sln -OutputDirectory ..\packages -NonInteractive -ConfigFile nuget.config
 IF %ERRORLEVEL% NEQ 0 goto error
 
 echo Building solution...
@@ -48,7 +48,7 @@ if not exist %libtmp%\net451 mkdir %libtmp%\net451
 copy ..\src\bin\%config%\net451\MassActivation.dll %libtmp%\net451 /Y
 copy ..\src\bin\%config%\net451\MassActivation.xml %libtmp%\net451 /Y
 
-call :ExecuteCmd ..\tools\nuget.exe pack "%cd%\MassActivation.nuspec" -OutputDirectory %packagestmp% %version%
+call :ExecuteCmd nuget.exe pack "%cd%\MassActivation.nuspec" -OutputDirectory %packagestmp% %version%
 IF %ERRORLEVEL% NEQ 0 goto error
 
 rmdir %libtmp% /S /Q

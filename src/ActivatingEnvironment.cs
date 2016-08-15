@@ -23,6 +23,15 @@ namespace MassActivation
         {
             Environment = System.Environment.GetEnvironmentVariable("ACTIVATION_ENVIRONMENT") ?? EnvironmentName.Production;
             var entryAssembly = Assembly.GetEntryAssembly();
+            if (entryAssembly == null)
+            {
+                var type = HttpContext.Current?.ApplicationInstance?.GetType();
+                while (type?.Namespace == "ASP")
+                {
+                    type = type.BaseType;
+                }
+                entryAssembly = type?.Assembly;
+            }
             if (entryAssembly != null)
             {
                 ApplicationName = entryAssembly.GetName().Name;
@@ -126,7 +135,12 @@ namespace MassActivation
                 }
             }
             LoadApplicationAssemblies();
-            return (assemblies ?? Enumerable.Empty<Assembly>()).Union(AppDomain.CurrentDomain.GetAssemblies());
+            return (assemblies ?? Enumerable.Empty<Assembly>()).Union(GetDomainAssemblies());
+        }
+
+        private IEnumerable<Assembly> GetDomainAssemblies()
+        {
+            return AppDomain.CurrentDomain.GetAssemblies();
         }
 
         /// <summary>
