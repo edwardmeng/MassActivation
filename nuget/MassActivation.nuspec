@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>Wheatech.Activation</id>
+    <id>MassActivation</id>
     <version>1.0.5</version>
     <authors>edwardmeng</authors>
     <owners>edwardmeng</owners>
@@ -21,5 +21,6 @@
   <files>
     <file src="lib\**\*.dll" target="lib" />
     <file src="lib\**\*.xml" target="lib" />
+    <file src="..\LICENSE" />
   </files>
 </package>

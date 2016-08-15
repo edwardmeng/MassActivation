@@ -1,6 +1,6 @@
 ﻿using ReferenceAssembly;
 
-namespace Wheatech.Activation.Tests
+namespace MassActivation.Tests
 {
     public class StartupDevelopment
     {

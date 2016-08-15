@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Wheatech.Activation
+namespace MassActivation
 {
     internal class ActivationMetadata
     {

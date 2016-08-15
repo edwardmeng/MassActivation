@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Wheatech.Activation
+namespace MassActivation
 {
     /// <summary>
     /// Used to mark which class in an assembly should be used for automatic startup and shutdown. 

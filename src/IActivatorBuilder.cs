@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Wheatech.Activation
+namespace MassActivation
 {
     /// <summary>
     /// The configuration interface for the <see cref="ApplicationActivator"/> environment variables.

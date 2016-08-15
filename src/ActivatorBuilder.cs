@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Wheatech.Activation
+namespace MassActivation
 {
     /// <summary>
     /// The implementation of <see cref="IActivatorBuilder"/> to adapter <see cref="ApplicationActivator"/> in fluent method chain.

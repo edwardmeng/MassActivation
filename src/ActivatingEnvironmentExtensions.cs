@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Wheatech.Activation
+namespace MassActivation
 {
     /// <summary>
     /// Extension methods for <see cref="IActivatingEnvironment"/>. 

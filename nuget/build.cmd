@@ -19,15 +19,15 @@ set VisualStudioVersion=14.0
 REM Package restore
 echo.
 echo Running package restore...
-call :ExecuteCmd ..\tools\nuget.exe restore ..\Wheatech.Activation.sln -OutputDirectory ..\packages -NonInteractive -ConfigFile nuget.config
+call :ExecuteCmd ..\tools\nuget.exe restore ..\MassActivation.sln -OutputDirectory ..\packages -NonInteractive -ConfigFile nuget.config
 IF %ERRORLEVEL% NEQ 0 goto error
 
 echo Building solution...
-call :ExecuteCmd %msbuild% "..\src\Wheatech.Activation.35.csproj" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
+call :ExecuteCmd %msbuild% "..\src\MassActivation.35.csproj" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
 IF %ERRORLEVEL% NEQ 0 goto error
-call :ExecuteCmd %msbuild% "..\src\Wheatech.Activation.40.csproj" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
+call :ExecuteCmd %msbuild% "..\src\MassActivation.40.csproj" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
 IF %ERRORLEVEL% NEQ 0 goto error
-call :ExecuteCmd %msbuild% "..\src\Wheatech.Activation.451.csproj" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
+call :ExecuteCmd %msbuild% "..\src\MassActivation.451.csproj" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
 IF %ERRORLEVEL% NEQ 0 goto error
 
 echo Packaging...
@@ -37,18 +37,18 @@ if not exist %libtmp% mkdir %libtmp%
 if not exist %packagestmp% mkdir %packagestmp%
 
 if not exist %libtmp%\net35 mkdir %libtmp%\net35
-copy ..\src\bin\%config%\net35\Wheatech.Activation.dll %libtmp%\net35 /Y
-copy ..\src\bin\%config%\net35\Wheatech.Activation.xml %libtmp%\net35 /Y
+copy ..\src\bin\%config%\net35\MassActivation.dll %libtmp%\net35 /Y
+copy ..\src\bin\%config%\net35\MassActivation.xml %libtmp%\net35 /Y
 
 if not exist %libtmp%\net40 mkdir %libtmp%\net40
-copy ..\src\bin\%config%\net40\Wheatech.Activation.dll %libtmp%\net40 /Y
-copy ..\src\bin\%config%\net40\Wheatech.Activation.xml %libtmp%\net40 /Y
+copy ..\src\bin\%config%\net40\MassActivation.dll %libtmp%\net40 /Y
+copy ..\src\bin\%config%\net40\MassActivation.xml %libtmp%\net40 /Y
 
 if not exist %libtmp%\net451 mkdir %libtmp%\net451
-copy ..\src\bin\%config%\net451\Wheatech.Activation.dll %libtmp%\net451 /Y
-copy ..\src\bin\%config%\net451\Wheatech.Activation.xml %libtmp%\net451 /Y
+copy ..\src\bin\%config%\net451\MassActivation.dll %libtmp%\net451 /Y
+copy ..\src\bin\%config%\net451\MassActivation.xml %libtmp%\net451 /Y
 
-call :ExecuteCmd ..\tools\nuget.exe pack "%cd%\Wheatech.Activation.nuspec" -OutputDirectory %packagestmp% %version%
+call :ExecuteCmd ..\tools\nuget.exe pack "%cd%\MassActivation.nuspec" -OutputDirectory %packagestmp% %version%
 IF %ERRORLEVEL% NEQ 0 goto error
 
 rmdir %libtmp% /S /Q

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Wheatech.Activation
+namespace MassActivation
 {
     /// <summary>
     /// The standard exception thrown when a <see cref="ApplicationActivator"/> has an error in startup an application.

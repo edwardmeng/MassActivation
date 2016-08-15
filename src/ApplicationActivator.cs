@@ -6,9 +6,9 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Web;
 using System.Web.Compilation;
-using Wheatech.Activation.Properties;
+using MassActivation.Properties;
 
-namespace Wheatech.Activation
+namespace MassActivation
 {
     /// <summary>
     /// The entry point for the application host activation.

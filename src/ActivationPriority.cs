@@ -1,4 +1,4 @@
-﻿namespace Wheatech.Activation
+﻿namespace MassActivation
 {
     /// <summary>
     /// The enumeration of the priority for the activation class, constructor or methods.

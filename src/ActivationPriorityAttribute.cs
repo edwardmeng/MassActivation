@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Wheatech.Activation
+namespace MassActivation
 {
     /// <summary>
     /// Used to mark the priority of the activation class, constructor or methods.

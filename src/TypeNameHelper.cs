@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Wheatech.Activation
+namespace MassActivation
 {
     internal class TypeNameHelper
     {

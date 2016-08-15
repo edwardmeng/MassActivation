@@ -1,4 +1,4 @@
-﻿namespace Wheatech.Activation
+﻿namespace MassActivation
 {
     /// <summary>
     /// Commonly used environment names. 

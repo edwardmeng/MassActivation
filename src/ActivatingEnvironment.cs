@@ -11,7 +11,7 @@ using System.Web.Compilation;
 using System.Web.Hosting;
 using System.Xml;
 
-namespace Wheatech.Activation
+namespace MassActivation
 {
     internal class ActivatingEnvironment : IActivatingEnvironment
     {

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security;
 
-namespace Wheatech.Activation
+namespace MassActivation
 {
     internal class AssemblyDirScanner: IEnumerable<Assembly>
     {

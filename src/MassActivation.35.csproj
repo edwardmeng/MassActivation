@@ -7,8 +7,8 @@
     <ProjectGuid>{8BD85022-609E-431C-A3DF-F95B9147D37F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Wheatech.Activation</RootNamespace>
-    <AssemblyName>Wheatech.Activation</AssemblyName>
+    <RootNamespace>MassActivation</RootNamespace>
+    <AssemblyName>MassActivation</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -30,14 +30,14 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Wheatech.Activation.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\net35\MassActivation.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\tools\wheatech.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\tools\MassActivation.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -68,15 +68,15 @@
     <Compile Include="TypeNameHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\tools\wheatech.snk">
-      <Link>wheatech.snk</Link>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Properties\Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\tools\MassActivation.snk">
+      <Link>MassActivation.snk</Link>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

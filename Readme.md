@@ -1,4 +1,4 @@
-Wheatech.Activation
+MassActivation
 ===================
 Introduce
 --------
@@ -8,7 +8,7 @@ Instead of assembly the startup or shutdown codes into the `Global.asax` or `Sta
 
 Installing via NuGet!
 ---------------------
-        Install-Package Wheatech.Activation
+        Install-Package MassActivation
 Usage
 ------
 #####Step 1. Add startup class to your package.(**Required**)

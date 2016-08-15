@@ -2,7 +2,7 @@
 using ReferenceAssembly;
 using Xunit;
 
-namespace Wheatech.Activation.Tests
+namespace MassActivation.Tests
 {
     public class ActiatorFixture
     {
