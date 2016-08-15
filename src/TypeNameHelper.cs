@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Text;
 
 namespace Wheatech.Activation
@@ -25,11 +24,6 @@ namespace Wheatech.Activation
             { typeof(ulong), "ulong" },
             { typeof(ushort), "ushort" }
             };
-
-        public static string GetTypeDisplayName(object item, bool fullName = true)
-        {
-            return item == null ? null : GetTypeDisplayName(item.GetType(), fullName);
-        }
 
         public static string GetTypeDisplayName(Type type, bool fullName = true)
         {
@@ -58,7 +52,7 @@ namespace Wheatech.Activation
 
         private static void ProcessTypeName(Type t, StringBuilder sb, bool fullName)
         {
-            if (t.GetTypeInfo().IsGenericType)
+            if (t.IsGenericType)
             {
                 ProcessNestedGenericTypes(t, sb, fullName);
                 return;
@@ -78,7 +72,7 @@ namespace Wheatech.Activation
             var genericFullName = t.GetGenericTypeDefinition().FullName;
             var genericSimpleName = t.GetGenericTypeDefinition().Name;
             var parts = genericFullName.Split('+');
-            var genericArguments = t.GetTypeInfo().GenericTypeArguments;
+            var genericArguments = t.IsGenericType ? t.GetGenericArguments() : Type.EmptyTypes;
             var index = 0;
             var totalParts = parts.Length;
             if (totalParts == 1)

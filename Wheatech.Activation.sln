@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReferenceAssembly", "test\ReferenceAssembly\ReferenceAssembly.csproj", "{568F6D31-CD84-40AE-92A5-A4731F86CF5B}"
 EndProject
@@ -14,8 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{477BE195
 		nuget\Wheatech.Activation.nuspec = nuget\Wheatech.Activation.nuspec
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Activation", "src\Wheatech.Activation.csproj", "{372427EA-7535-42B7-886D-E254E67670CE}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Activation.Tests", "test\Wheatech.Activation.Tests\Wheatech.Activation.Tests.csproj", "{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CBC4B7FB-ED20-42F0-AB6F-14552F8427A6}"
@@ -23,6 +21,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		LICENSE = LICENSE
 		Readme.md = Readme.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Activation.40", "src\Wheatech.Activation.40.csproj", "{372427EA-7535-42B7-886D-E254E67670CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Activation.451", "src\Wheatech.Activation.451.csproj", "{D1AEB6FD-58A5-438D-8E60-97FD06F5278A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Activation.35", "src\Wheatech.Activation.35.csproj", "{8BD85022-609E-431C-A3DF-F95B9147D37F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,14 +38,22 @@ Global
 		{568F6D31-CD84-40AE-92A5-A4731F86CF5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{568F6D31-CD84-40AE-92A5-A4731F86CF5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{568F6D31-CD84-40AE-92A5-A4731F86CF5B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{372427EA-7535-42B7-886D-E254E67670CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{372427EA-7535-42B7-886D-E254E67670CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{372427EA-7535-42B7-886D-E254E67670CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{372427EA-7535-42B7-886D-E254E67670CE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{372427EA-7535-42B7-886D-E254E67670CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{372427EA-7535-42B7-886D-E254E67670CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{372427EA-7535-42B7-886D-E254E67670CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{372427EA-7535-42B7-886D-E254E67670CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1AEB6FD-58A5-438D-8E60-97FD06F5278A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1AEB6FD-58A5-438D-8E60-97FD06F5278A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1AEB6FD-58A5-438D-8E60-97FD06F5278A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1AEB6FD-58A5-438D-8E60-97FD06F5278A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BD85022-609E-431C-A3DF-F95B9147D37F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BD85022-609E-431C-A3DF-F95B9147D37F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BD85022-609E-431C-A3DF-F95B9147D37F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BD85022-609E-431C-A3DF-F95B9147D37F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

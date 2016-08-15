@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
 namespace Wheatech.Activation
 {
@@ -23,7 +24,7 @@ namespace Wheatech.Activation
             {
                 if (!_priority.HasValue)
                 {
-                    var attribute = TargetMember.GetCustomAttribute<ActivationPriorityAttribute>();
+                    var attribute = (ActivationPriorityAttribute)Attribute.GetCustomAttribute(TargetMember,typeof(ActivationPriorityAttribute));
                     _priority = attribute?.Priority ?? _defaultPriority;
                 }
                 return _priority.Value;

@@ -136,12 +136,12 @@ namespace Wheatech.Activation
         {
             var info = AppDomain.CurrentDomain.SetupInformation;
             IEnumerable<string> searchPaths = new string[0];
-            if (info.PrivateBinPathProbe == null || string.IsNullOrWhiteSpace(info.PrivateBinPath))
+            if (info.PrivateBinPathProbe == null || string.IsNullOrEmpty(info.PrivateBinPath))
             {
                 // Check the current directory
                 searchPaths = searchPaths.Concat(new[] { string.Empty });
             }
-            if (!string.IsNullOrWhiteSpace(info.PrivateBinPath))
+            if (!string.IsNullOrEmpty(info.PrivateBinPath))
             {
                 // PrivateBinPath may be a semicolon separated list of subdirectories.
                 searchPaths = searchPaths.Concat(info.PrivateBinPath.Split(';'));

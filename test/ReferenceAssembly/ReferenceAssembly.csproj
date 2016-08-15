@@ -40,12 +40,6 @@
     <Compile Include="IAppContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Wheatech.Activation.csproj">
-      <Project>{372427ea-7535-42b7-886d-e254e67670ce}</Project>
-      <Name>Wheatech.Activation</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -15,6 +15,23 @@ namespace Wheatech.Activation
     /// </summary>
     public static class ApplicationActivator
     {
+        private sealed class Pair<TFirst,TSecond>
+        {
+            public TFirst First { get; }
+            public TSecond Second { get; }
+
+            public Pair(TFirst x, TSecond y)
+            {
+                First = x;
+                Second = y;
+            }
+        }
+
+        private static Pair<TFirst, TSecond> CreatePair<TFirst, TSecond>(TFirst x, TSecond y)
+        {
+            return new Pair<TFirst, TSecond>(x, y);
+        }
+
         #region Fields
 
         private static string _environmentName;
@@ -48,7 +65,7 @@ namespace Wheatech.Activation
             AssemblyActivatorAttribute attribute;
             try
             {
-                attribute = assembly.GetCustomAttribute<AssemblyActivatorAttribute>();
+                attribute = (AssemblyActivatorAttribute) Attribute.GetCustomAttribute(assembly,typeof (AssemblyActivatorAttribute));
             }
             catch (CustomAttributeFormatException)
             {
@@ -87,7 +104,7 @@ namespace Wheatech.Activation
 
         private static ActivationMetadata LookupClassConstructor(ActivationMetadata type)
         {
-            var constructor = ((Type)type.TargetMember).GetTypeInfo().DeclaredConstructors.FirstOrDefault(ctor => ctor.IsStatic);
+            var constructor = ((Type)type.TargetMember).GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly).FirstOrDefault();
             return constructor == null ? null : new ActivationMetadata(constructor, type.Priority);
         }
 
@@ -101,11 +118,11 @@ namespace Wheatech.Activation
             var constructors = targetType.GetConstructors();
             if (constructors.Length == 0)
             {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.NoPublicConstructor, TypeNameHelper.GetTypeDisplayName(type)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.NoPublicConstructor, TypeNameHelper.GetTypeDisplayName((Type)type.TargetMember)));
             }
             if (constructors.Length > 1)
             {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_PublicConstructor, TypeNameHelper.GetTypeDisplayName(type)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_PublicConstructor, TypeNameHelper.GetTypeDisplayName((Type)type.TargetMember)));
             }
             return new ActivationMetadata(constructors[0], type.Priority);
         }
@@ -137,7 +154,7 @@ namespace Wheatech.Activation
                                 let constructor = ValidateMethod(LookupInstanceConstructor(type))
                                 where constructor != null
                                 orderby constructor.Priority, ((MethodBase)constructor.TargetMember).GetParameters().Length
-                                select Tuple.Create(type, constructor)).ToList();
+                                select CreatePair(type, constructor)).ToList();
 
             var instanceCount = -1;
             while (instanceCount != 0 && constructors.Count > 0)
@@ -147,9 +164,9 @@ namespace Wheatech.Activation
                 {
                     var ctor = constructors[i];
                     object instance;
-                    if (TryCreateInstance((ConstructorInfo)ctor.Item2.TargetMember, out instance))
+                    if (TryCreateInstance((ConstructorInfo)ctor.Second.TargetMember, out instance))
                     {
-                        ctor.Item1.TargetInstance = instance;
+                        ctor.First.TargetInstance = instance;
                         constructors.RemoveAt(i);
                         instanceCount++;
                         i--;
@@ -159,7 +176,7 @@ namespace Wheatech.Activation
             if (constructors.Count > 0)
             {
                 throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.CannotCreateInstances,
-                    string.Join(", ", constructors.Select(x => TypeNameHelper.GetTypeDisplayName(x.Item1)))));
+                    string.Join(", ", constructors.Select(x => TypeNameHelper.GetTypeDisplayName((Type)x.First.TargetMember)).ToArray())));
             }
         }
 
@@ -227,7 +244,7 @@ namespace Wheatech.Activation
             }
             if (nomalMethodsWithEnv.Count > 1)
             {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithEnv, TypeNameHelper.GetTypeDisplayName(type)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithEnv, TypeNameHelper.GetTypeDisplayName((Type)type.TargetMember)));
             }
             if (nomalMethodsWithEnv.Count == 1)
             {
@@ -235,7 +252,7 @@ namespace Wheatech.Activation
             }
             if (nomalMethodsWithoutEnv.Count > 1)
             {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithoutEnv, TypeNameHelper.GetTypeDisplayName(type)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithoutEnv, TypeNameHelper.GetTypeDisplayName((Type)type.TargetMember)));
             }
             if (nomalMethodsWithoutEnv.Count == 1)
             {
@@ -243,11 +260,11 @@ namespace Wheatech.Activation
             }
             if (genericMethodsWithEnv.Count > 0)
             {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithEnv, TypeNameHelper.GetTypeDisplayName(type)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithEnv, TypeNameHelper.GetTypeDisplayName((Type)type.TargetMember)));
             }
             if (genericMethodsWithoutEnv.Count > 0)
             {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithoutEnv, TypeNameHelper.GetTypeDisplayName(type)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithoutEnv, TypeNameHelper.GetTypeDisplayName((Type)type.TargetMember)));
             }
             return null;
         }
@@ -282,14 +299,14 @@ namespace Wheatech.Activation
                           let method = ValidateMethod(LookupMethod(instance, methodName, _environment.Environment))
                           where method != null
                           orderby method.Priority, ((MethodBase)method.TargetMember).GetParameters().Length
-                          select Tuple.Create(instance, method);
+                          select CreatePair(instance, method);
             if (startup)
             {
-                methods = methods.OrderBy(x => x.Item2.Priority).ThenBy(x => ((MethodBase)x.Item2.TargetMember).GetParameters().Length);
+                methods = methods.OrderBy(x => x.Second.Priority).ThenBy(x => ((MethodBase)x.Second.TargetMember).GetParameters().Length);
             }
             else
             {
-                methods = methods.OrderBy(x => x.Item2.Priority).ThenByDescending(x => ((MethodBase)x.Item2.TargetMember).GetParameters().Length);
+                methods = methods.OrderBy(x => x.Second.Priority).ThenByDescending(x => ((MethodBase)x.Second.TargetMember).GetParameters().Length);
             }
             var methodList = methods.ToList();
             var invokeMethodCount = -1;
@@ -298,7 +315,7 @@ namespace Wheatech.Activation
                 invokeMethodCount = 0;
                 for (int i = 0; i < methodList.Count; i++)
                 {
-                    if (TryInvokeMethod((MethodInfo)methodList[i].Item2.TargetMember, methodList[i].Item1.TargetInstance))
+                    if (TryInvokeMethod((MethodInfo)methodList[i].Second.TargetMember, methodList[i].First.TargetInstance))
                     {
                         methodList.RemoveAt(i);
                         invokeMethodCount++;
@@ -310,15 +327,14 @@ namespace Wheatech.Activation
             {
                 if (methodList.Count == 1)
                 {
-                    throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, methodList[0].Item2.TargetMember.Name,
-                        TypeNameHelper.GetTypeDisplayName(methodList[0].Item1.TargetMember)));
+                    throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, methodList[0].Second.TargetMember.Name,
+                        TypeNameHelper.GetTypeDisplayName((Type)methodList[0].First.TargetMember)));
                 }
                 else
                 {
-                    throw new AggregateException(
-                        methodList.Select(method =>
-                                new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, method.Item2.TargetMember.Name,
-                                    TypeNameHelper.GetTypeDisplayName(method.Item1.TargetMember)))));
+                    throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Invoke_MultipleMethod,
+                        string.Join(", ",
+                            methodList.Select(method => TypeNameHelper.GetTypeDisplayName((Type) method.First.TargetMember) + "." + method.Second.TargetMember.Name).ToArray())));
                 }
             }
         }
@@ -511,8 +527,10 @@ namespace Wheatech.Activation
                 // Attach events to shutdown the application.
                 AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
                 typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
-                    .AddMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
+                    .GetAddMethod(true).Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
+#if Net451
                 System.Web.Hosting.HostingEnvironment.StopListening += OnStopListening;
+#endif
             }
         }
 
@@ -659,9 +677,11 @@ namespace Wheatech.Activation
         private static void RemoveEventHandlers()
         {
             AppDomain.CurrentDomain.DomainUnload -= OnDomainUnload;
+#if Net451
             System.Web.Hosting.HostingEnvironment.StopListening -= OnStopListening;
+#endif
             typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
-              .RemoveMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
+              .GetRemoveMethod(true).Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
         }
 
         private static void DisposeInstances(IEnumerable<ActivationMetadata> types)
@@ -679,11 +699,13 @@ namespace Wheatech.Activation
             RemoveEventHandlers();
         }
 
+#if Net451
         private static void OnStopListening(object sender, EventArgs e)
         {
             Shutdown();
             RemoveEventHandlers();
         }
+#endif
 
         private static void OnAppDomainShutdown(object sender, BuildManagerHostUnloadEventArgs args)
         {
@@ -691,6 +713,6 @@ namespace Wheatech.Activation
             RemoveEventHandlers();
         }
 
-        #endregion
+#endregion
     }
 }

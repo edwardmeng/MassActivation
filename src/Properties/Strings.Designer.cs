@@ -79,6 +79,15 @@ namespace Wheatech.Activation.Properties {
         }
         
         /// <summary>
+        ///   查找类似 The following activation methods cannot be invoked: {0}. 的本地化字符串。
+        /// </summary>
+        internal static string Cannot_Invoke_MultipleMethod {
+            get {
+                return ResourceManager.GetString("Cannot_Invoke_MultipleMethod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 The method {0} in the activator type {1} cannot be invoke. 的本地化字符串。
         /// </summary>
         internal static string Cannot_InvokeMethod {

@@ -74,10 +74,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Wheatech.Activation.csproj">
-      <Project>{372427ea-7535-42b7-886d-e254e67670ce}</Project>
-      <Name>Wheatech.Activation</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ReferenceAssembly\ReferenceAssembly.csproj">
       <Project>{568f6d31-cd84-40ae-92a5-a4731f86cf5b}</Project>
       <Name>ReferenceAssembly</Name>
