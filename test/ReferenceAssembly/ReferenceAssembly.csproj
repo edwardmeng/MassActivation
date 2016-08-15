@@ -40,6 +40,12 @@
     <Compile Include="IAppContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MassActivation.451.csproj">
+      <Project>{d1aeb6fd-58a5-438d-8e60-97fd06f5278a}</Project>
+      <Name>MassActivation.451</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

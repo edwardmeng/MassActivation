@@ -6,8 +6,8 @@
     <ProjectGuid>{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Wheatech.Activation.Tests</RootNamespace>
-    <AssemblyName>Wheatech.Activation.Tests</AssemblyName>
+    <RootNamespace>MassActivation.Tests</RootNamespace>
+    <AssemblyName>MassActivation.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -66,14 +66,20 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="ActiatorFixture.cs" />
+    <Compile Include="ActivatingEnvironmentFixture.cs" />
+    <Compile Include="ActivatorFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StartupDevelopment.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="MassActivation.snk" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\MassActivation.451.csproj">
+      <Project>{d1aeb6fd-58a5-438d-8e60-97fd06f5278a}</Project>
+      <Name>MassActivation.451</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ReferenceAssembly\ReferenceAssembly.csproj">
       <Project>{568f6d31-cd84-40ae-92a5-a4731f86cf5b}</Project>
       <Name>ReferenceAssembly</Name>

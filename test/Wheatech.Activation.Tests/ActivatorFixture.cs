@@ -4,7 +4,7 @@ using Xunit;
 
 namespace MassActivation.Tests
 {
-    public class ActiatorFixture
+    public class ActivatorFixture
     {
         [Fact]
         public void ConstructorParameters()

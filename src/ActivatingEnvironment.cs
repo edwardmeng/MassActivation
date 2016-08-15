@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,29 +16,71 @@ namespace MassActivation
 {
     internal class ActivatingEnvironment : IActivatingEnvironment
     {
+        private const string AspNetNamespace = "ASP";
+        private const string EnvironmentVariableName = "ACTIVATION_ENVIRONMENT";
         private readonly Hashtable _environment = new Hashtable();
         private static bool _applicationAssembliesLoaded;
         private static readonly object _lockObj = new object();
 
         internal ActivatingEnvironment()
         {
-            Environment = System.Environment.GetEnvironmentVariable("ACTIVATION_ENVIRONMENT") ?? EnvironmentName.Production;
-            var entryAssembly = Assembly.GetEntryAssembly();
-            if (entryAssembly == null)
-            {
-                var type = HttpContext.Current?.ApplicationInstance?.GetType();
-                while (type?.Namespace == "ASP")
-                {
-                    type = type.BaseType;
-                }
-                entryAssembly = type?.Assembly;
-            }
+            Environment = System.Environment.GetEnvironmentVariable(EnvironmentVariableName) ?? EnvironmentName.Production;
+            var entryAssembly = GetEntryAssembly();
             if (entryAssembly != null)
             {
                 ApplicationName = entryAssembly.GetName().Name;
                 ApplicationVersion = entryAssembly.GetName().Version;
             }
+            else
+            {
+                ApplicationName = AppDomain.CurrentDomain.FriendlyName;
+            }
+            
             Components.Add(typeof(IActivatingEnvironment), this);
+        }
+
+        /// <summary>
+        /// Return the entry assembly for difference hosting environments.
+        /// 1. Windows Application & WPF Application
+        /// 2. ASP.NET Application
+        /// 3. Unit Test Application
+        /// 4. Console Application
+        /// 5. WCF Application
+        /// </summary>
+        /// <returns></returns>
+        private Assembly GetEntryAssembly()
+        {
+            // windows applications or console applications.
+            var entryAssembly = Assembly.GetEntryAssembly();
+            if (entryAssembly != null) return entryAssembly;
+            // asp.net web applications
+            var type = HttpContext.Current?.ApplicationInstance?.GetType();
+            while (type?.Namespace == AspNetNamespace)
+            {
+                type = type.BaseType;
+            }
+            entryAssembly = type?.Assembly;
+            if (entryAssembly != null) return entryAssembly;
+            // unit test
+            var methodFrames = new StackTrace().GetFrames()?.Select(t => t.GetMethod()).ToArray();
+            if (methodFrames == null) return null;
+            MethodBase entryMethod = null;
+            int firstInvokeMethod = 0;
+            for (int i = 0; i < methodFrames.Length; i++)
+            {
+                var method = methodFrames[i] as MethodInfo;
+                if (method == null)
+                    continue;
+                if (method.Name == "Main" && method.ReturnType == typeof(void))
+                    entryMethod = method;
+                else if (firstInvokeMethod == 0 && method.Name == "InvokeMethod" && method.IsStatic && method.DeclaringType == typeof(RuntimeMethodHandle))
+                    firstInvokeMethod = i;
+            }
+
+            if (entryMethod == null)
+                entryMethod = firstInvokeMethod != 0 ? methodFrames[firstInvokeMethod - 1] : methodFrames.Last();
+
+            return entryMethod.Module.Assembly;
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 ﻿using System.Linq;
+using MassActivation;
 using ReferenceAssembly;
-using Wheatech.Activation;
 
 [assembly:AssemblyActivator(typeof(AssemblyActivator))]
 
