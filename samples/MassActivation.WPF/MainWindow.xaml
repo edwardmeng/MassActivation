@@ -1,0 +1,16 @@
+﻿<Window x:Class="MassActivation.WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MassActivation.WPF"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <Label x:Name="label" Content="Application Name" HorizontalAlignment="Left" Margin="30,54,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
+        <Label x:Name="label_Copy" Content="Application Version" HorizontalAlignment="Left" Margin="30,84,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
+        <Label x:Name="labelName" Content="" HorizontalAlignment="Left" Margin="213,54,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.108,0.798" Width="164"/>
+        <Label x:Name="labelVersion" Content="" HorizontalAlignment="Left" Margin="213,84,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.108,0.798" Width="164"/>
+
+    </Grid>
+</Window>
