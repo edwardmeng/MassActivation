@@ -67,9 +67,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ActivatingEnvironmentFixture.cs" />
-    <Compile Include="ActivatorFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StartupDevelopment.cs" />
+    <Compile Include="StartupInvocationFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MassActivation.snk" />
@@ -79,10 +78,6 @@
     <ProjectReference Include="..\..\src\MassActivation.451.csproj">
       <Project>{d1aeb6fd-58a5-438d-8e60-97fd06f5278a}</Project>
       <Name>MassActivation.451</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ReferenceAssembly\ReferenceAssembly.csproj">
-      <Project>{568f6d31-cd84-40ae-92a5-a4731f86cf5b}</Project>
-      <Name>ReferenceAssembly</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

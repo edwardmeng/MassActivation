@@ -27,6 +27,8 @@ namespace MassActivation
             }
         }
 
+        internal static ActivatingEnvironment Environment => _environment;
+
         private static Pair<TFirst, TSecond> CreatePair<TFirst, TSecond>(TFirst x, TSecond y)
         {
             return new Pair<TFirst, TSecond>(x, y);
