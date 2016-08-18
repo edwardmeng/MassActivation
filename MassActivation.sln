@@ -38,6 +38,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassActivation.WPF", "sampl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassActivation.Web", "samples\MassActivation.Web\MassActivation.Web.csproj", "{F999FE49-DEE5-4A87-8D89-F9ED2224B7C3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassActivation.Tests", "test\MassActivation.UnitTests\MassActivation.Tests.csproj", "{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,6 +78,10 @@ Global
 		{F999FE49-DEE5-4A87-8D89-F9ED2224B7C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F999FE49-DEE5-4A87-8D89-F9ED2224B7C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F999FE49-DEE5-4A87-8D89-F9ED2224B7C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -89,5 +95,6 @@ Global
 		{8FF50E2C-45AF-44FC-A892-D62848E8CA9A} = {5E34DAA2-083D-426F-B121-F4CA03F96DF4}
 		{9869A9DB-8C84-4DC6-918C-7D2D9DC54D85} = {5E34DAA2-083D-426F-B121-F4CA03F96DF4}
 		{F999FE49-DEE5-4A87-8D89-F9ED2224B7C3} = {5E34DAA2-083D-426F-B121-F4CA03F96DF4}
+		{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40} = {1221F874-7083-4EA7-94CF-D8381B65EACB}
 	EndGlobalSection
 EndGlobal

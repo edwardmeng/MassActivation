@@ -7,7 +7,7 @@ namespace MassActivation
     /// <summary>
     /// Provides information about the hosting environment an application is running in.
     /// </summary>
-    public interface IActivatingEnvironment
+    public interface IActivatingEnvironment : IServiceProvider
     {
         /// <summary>
         /// Gets or sets the environment variable by using the specified name.
