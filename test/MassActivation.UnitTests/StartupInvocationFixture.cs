@@ -70,5 +70,153 @@ namespace MassActivation.Tests
             ApplicationActivator.UseEnvironment(EnvironmentName.Development).Startup();
             Assert.Equal("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
         }
+
+        [Fact]
+        public void DefaultConvensionEnvironmentMethodName()
+        {
+            Assert.True(CreateAssembly("test.dll",
+                "using MassActivation;\r\n" +
+                "public class Startup{\r\n" +
+                    "public void Configuration(IActivatingEnvironment environment){\r\n" +
+                        "environment.UseApplicationName(\"DefaultApplication\");\r\n" +
+                    "}\r\n" +
+                    "public void ConfigurationDevelopment(IActivatingEnvironment environment){\r\n" +
+                        "environment.UseApplicationName(\"DevelopmentApplication\");\r\n" +
+                    "}\r\n" +
+                "}"
+                ));
+            ApplicationActivator.UseEnvironment(EnvironmentName.Development).Startup();
+            Assert.Equal("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
+        }
+
+        [Fact]
+        public void AttributeSpecifiedDefaultStartupClass()
+        {
+            Assert.True(CreateAssembly("test.dll",
+                "using MassActivation;\r\n" +
+                "[assembly: AssemblyActivator(typeof(Activator))]\r\n" +
+                "public class Activator{\r\n" +
+                    "public void Configuration(IActivatingEnvironment environment){\r\n" +
+                        "environment.UseApplicationName(\"TestApplication\");\r\n" +
+                    "}\r\n" +
+                "}"));
+            ApplicationActivator.Startup();
+            Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
+        }
+
+        [Fact]
+        public void AttributeSpecifiedEnvironmentStartupClass()
+        {
+            Assert.True(CreateAssembly("test.dll",
+                "using MassActivation;\r\n" +
+                "[assembly: AssemblyActivator(typeof(Activator))]\r\n" +
+                "public class Activator{\r\n" +
+                    "public void Configuration(IActivatingEnvironment environment){\r\n" +
+                        "environment.UseApplicationName(\"DefaultApplication\");\r\n" +
+                    "}\r\n" +
+                "}",
+                "using MassActivation;\r\n" +
+                "[assembly: AssemblyActivator(typeof(ActivatorDevelopment),\"Development\")]\r\n" +
+                "public class ActivatorDevelopment{\r\n" +
+                    "public void Configuration(IActivatingEnvironment environment){\r\n" +
+                        "environment.UseApplicationName(\"DevelopmentApplication\");\r\n" +
+                    "}\r\n" +
+                "}"
+                ));
+            ApplicationActivator.UseEnvironment(EnvironmentName.Development).Startup();
+            Assert.Equal("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
+        }
+
+        [Fact]
+        public void InvokeStaticConstructor()
+        {
+            Assert.True(CreateAssembly("test.dll",
+                "using MassActivation;\r\n" +
+                "public class Startup{\r\n" +
+                    "static Startup(){\r\n" +
+                        "System.Environment.SetEnvironmentVariable(\"TestVariable\",\"MassActivation\");\r\n" +
+                    "}\r\n" +
+                    "public void Configuration(IActivatingEnvironment environment){\r\n" +
+                        "environment.UseApplicationName(\"TestApplication\");\r\n" +
+                    "}\r\n" +
+                "}"));
+            ApplicationActivator.Startup();
+            Assert.Equal("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
+        }
+
+        [Fact]
+        public void InvokeInstanceConstructor()
+        {
+            Environment.SetEnvironmentVariable("TestVariable", "Initialize");
+            Assert.Equal("Initialize", Environment.GetEnvironmentVariable("TestVariable"));
+            Assert.True(CreateAssembly("test.dll",
+             "using MassActivation;\r\n" +
+             "public class Startup{\r\n" +
+                 "public Startup(){\r\n" +
+                     "System.Environment.SetEnvironmentVariable(\"TestVariable\",\"MassActivation\");\r\n" +
+                 "}\r\n" +
+                 "public void Configuration(IActivatingEnvironment environment){\r\n" +
+                     "environment.UseApplicationName(\"TestApplication\");\r\n" +
+                 "}\r\n" +
+             "}"));
+            ApplicationActivator.Startup();
+            Assert.Equal("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
+        }
+
+        [Fact]
+        public void InvokeInstanceConstructorWithParameters()
+        {
+            Assert.True(CreateAssembly("test.dll",
+             "using MassActivation;\r\n" +
+             "public class Startup{\r\n" +
+                 "public Startup(IActivatingEnvironment environment){\r\n" +
+                     "environment.UseApplicationName(\"TestApplication\");\r\n" +
+                 "}\r\n" +
+             "}"));
+            ApplicationActivator.Startup();
+            Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
+        }
+
+        [Fact]
+        public void InstanceConstructorDefaultInvokeSequence()
+        {
+            Assert.True(CreateAssembly("test1.dll",
+             "using MassActivation;\r\n" +
+             "public class Startup{\r\n" +
+                 "public Startup(IActivatingEnvironment environment, System.IServiceProvider provider){\r\n" +
+                     "environment.UseApplicationName(\"TestApplication1\");\r\n" +
+                 "}\r\n" +
+             "}"));
+            Assert.True(CreateAssembly("test2.dll",
+              "using MassActivation;\r\n" +
+              "public class Startup{\r\n" +
+                  "public Startup(IActivatingEnvironment environment){\r\n" +
+                      "environment.UseApplicationName(\"TestApplication2\");\r\n" +
+                  "}\r\n" +
+              "}"));
+            ApplicationActivator.Startup();
+            Assert.Equal("TestApplication1", ApplicationActivator.Environment.ApplicationName);
+        }
+
+        [Fact]
+        public void InstanceMethodDefaultInvokeSequence()
+        {
+            Assert.True(CreateAssembly("test1.dll",
+             "using MassActivation;\r\n" +
+             "public class Startup{\r\n" +
+                 "public void Configuration(IActivatingEnvironment environment, System.IServiceProvider provider){\r\n" +
+                     "environment.UseApplicationName(\"TestApplication1\");\r\n" +
+                 "}\r\n" +
+             "}"));
+            Assert.True(CreateAssembly("test2.dll",
+              "using MassActivation;\r\n" +
+              "public class Startup{\r\n" +
+                  "public void Configuration(IActivatingEnvironment environment){\r\n" +
+                      "environment.UseApplicationName(\"TestApplication2\");\r\n" +
+                  "}\r\n" +
+              "}"));
+            ApplicationActivator.Startup();
+            Assert.Equal("TestApplication1", ApplicationActivator.Environment.ApplicationName);
+        }
     }
 }

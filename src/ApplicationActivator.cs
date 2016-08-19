@@ -64,44 +64,46 @@ namespace MassActivation
         {
             if (_environment == null) return null;
             // Detect the startup type declared using AssemblyStartupAttribute
-            AssemblyActivatorAttribute attribute;
+            AssemblyActivatorAttribute[] attributes;
             try
             {
-                attribute = (AssemblyActivatorAttribute) Attribute.GetCustomAttribute(assembly,typeof (AssemblyActivatorAttribute));
+                attributes = Attribute.GetCustomAttributes(assembly,typeof (AssemblyActivatorAttribute)).OfType<AssemblyActivatorAttribute>().ToArray();
             }
             catch (CustomAttributeFormatException)
             {
                 return null;
             }
             var startupAssemblyName = assembly.GetName().Name;
-            if (attribute != null)
+            var activatorAttribute = attributes.FirstOrDefault(attr => attr.Environment == Environment.Environment) ??
+                                     attributes.FirstOrDefault(attr => string.Equals(attr.Environment, Environment.Environment, StringComparison.OrdinalIgnoreCase)) ??
+                                     attributes.FirstOrDefault(attr => string.IsNullOrEmpty(attr.Environment));
+            if (activatorAttribute != null)
             {
-                if (attribute.StartupType.IsGenericTypeDefinition)
+                if (activatorAttribute.StartupType.IsGenericTypeDefinition)
                 {
-                    throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Startup_GenericType, TypeNameHelper.GetTypeDisplayName(attribute.StartupType), startupAssemblyName));
+                    throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Startup_GenericType, TypeNameHelper.GetTypeDisplayName(activatorAttribute.StartupType), startupAssemblyName));
                 }
-                if (attribute.StartupType.IsInterface || attribute.StartupType.IsAbstract)
+                if (activatorAttribute.StartupType.IsInterface || activatorAttribute.StartupType.IsAbstract)
                 {
-                    throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_AbstractOrInterface, TypeNameHelper.GetTypeDisplayName(attribute.StartupType), startupAssemblyName));
+                    throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_AbstractOrInterface, TypeNameHelper.GetTypeDisplayName(activatorAttribute.StartupType), startupAssemblyName));
                 }
-                return new ActivationMetadata(attribute.StartupType);
+                return new ActivationMetadata(activatorAttribute.StartupType);
             }
-            else
+            // Detect the startup type by using the convension name.
+            var startupNameWithoutEnv = "Startup";
+            var startupNameWithEnv = "Startup" + _environment.Environment;
+            Func<Type, ActivationMetadata> resolveActivator = type =>
             {
-                // Detect the startup type by using the convension name.
-                var startupNameWithoutEnv = "Startup";
-                var startupNameWithEnv = "Startup" + _environment.Environment;
-                var startupType =
-                    assembly.GetType(startupNameWithEnv, false) ??
-                    assembly.GetType(startupAssemblyName + "." + startupNameWithEnv, false) ??
-                    assembly.GetType(startupNameWithoutEnv, false) ??
-                    assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv, false);
-                if (startupType != null && !startupType.IsGenericTypeDefinition && !startupType.IsInterface && !startupType.IsAbstract)
+                if (type != null && !type.IsGenericTypeDefinition && !type.IsInterface && !type.IsAbstract)
                 {
-                    return new ActivationMetadata(startupType);
+                    return new ActivationMetadata(type);
                 }
-            }
-            return null;
+                return null;
+            };
+            return resolveActivator(assembly.GetType(startupNameWithEnv, false)) ??
+                   resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithEnv, false)) ??
+                   resolveActivator(assembly.GetType(startupNameWithoutEnv, false)) ??
+                   resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv, false));
         }
 
         private static ActivationMetadata LookupClassConstructor(ActivationMetadata type)

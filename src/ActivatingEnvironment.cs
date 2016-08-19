@@ -31,6 +31,10 @@ namespace MassActivation
         internal ActivatingEnvironment()
         {
             Environment = System.Environment.GetEnvironmentVariable(EnvironmentVariableName) ?? EnvironmentName.Production;
+            foreach (DictionaryEntry environmentVariable in System.Environment.GetEnvironmentVariables())
+            {
+                _environment[environmentVariable.Key] = environmentVariable.Value;
+            }
             var entryAssembly = GetEntryAssembly();
             if (entryAssembly != null)
             {
@@ -41,7 +45,6 @@ namespace MassActivation
             {
                 ApplicationName = AppDomain.CurrentDomain.FriendlyName;
             }
-            
             Components.Add(typeof(IActivatingEnvironment), this);
             Components.Add(typeof(IServiceProvider), this);
         }
