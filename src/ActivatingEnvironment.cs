@@ -7,26 +7,28 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security;
+#if !NetCore
 using System.Web;
 using System.Web.Compilation;
 using System.Web.Hosting;
+#endif
 using System.Xml;
 
 namespace MassActivation
 {
     internal class ActivatingEnvironment : IActivatingEnvironment
     {
-        #region Fields
+#region Fields
 
         private const string AspNetNamespace = "ASP";
         private const string EnvironmentVariableName = "ACTIVATION_ENVIRONMENT";
-        private readonly Hashtable _environment = new Hashtable();
+        private readonly IDictionary<object, object> _environment = new Dictionary<object, object>();
         private static bool _applicationAssembliesLoaded;
         private static readonly object _lockObj = new object();
 
-        #endregion
+#endregion
 
-        #region Constructor
+#region Constructor
 
         internal ActivatingEnvironment()
         {
@@ -49,9 +51,9 @@ namespace MassActivation
             Components.Add(typeof(IServiceProvider), this);
         }
 
-        #endregion
+#endregion
 
-        #region Properties
+#region Properties
 
         /// <summary>
         /// Gets or sets the environment variable by using the specified name.
@@ -60,7 +62,11 @@ namespace MassActivation
         /// <returns>The value of the environment variable.</returns>
         public object this[string name]
         {
-            get { return _environment[name]; }
+            get
+            {
+                object value;
+                return _environment.TryGetValue(name, out value) ? value : null;
+            }
             set { _environment[name] = value; }
         }
 
@@ -96,9 +102,9 @@ namespace MassActivation
         /// </summary>
         public IDictionary<Type, object> Components { get; } = new Dictionary<Type, object>();
 
-        #endregion
+#endregion
 
-        #region Methods
+#region Methods
 
         /// <summary>
         /// Specify the component to be used by the hosting application.
@@ -328,6 +334,6 @@ namespace MassActivation
             }
         }
 
-        #endregion
+#endregion
     }
 }
