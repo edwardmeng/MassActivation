@@ -7,7 +7,7 @@ set version=
 if not "%PackageVersion%" == "" (
    set version=-Version %PackageVersion%
 ) else (
-   set version=-Version 1.0.0
+   set version=-Version 1.0.1
 )
 REM Determine msbuild path
 set msbuildtmp="%ProgramFiles%\MSBuild\14.0\bin\msbuild"
