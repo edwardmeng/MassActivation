@@ -38,7 +38,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassActivation.WPF", "sampl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassActivation.Web", "samples\MassActivation.Web\MassActivation.Web.csproj", "{F999FE49-DEE5-4A87-8D89-F9ED2224B7C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassActivation.Tests", "test\MassActivation.UnitTests\MassActivation.Tests.csproj", "{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassActivation.UnitTests", "test\MassActivation.UnitTests.csproj", "{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

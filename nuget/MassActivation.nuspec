@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>MassActivation</id>
-    <version>1.0.0-alpha</version>
+    <version>1.0.0</version>
     <authors>edwardmeng</authors>
     <owners>edwardmeng</owners>
     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
