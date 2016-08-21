@@ -6,7 +6,7 @@
     <authors>edwardmeng</authors>
     <owners>edwardmeng</owners>
     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
-    <projectUrl>https://github.com/edwardmeng/Wheatech.Activation</projectUrl>
+    <projectUrl>https://github.com/edwardmeng/MassActivation</projectUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>
       This library makes it easy that allows you to split Startup or Shutdown steps to many difference packages into your application.
@@ -16,7 +16,7 @@
     <summary>
       This library makes it easy that allows you to split Startup or Shutdown steps to many difference packages into your application.
     </summary>
-    <tags>Activation Startup Shutdown</tags>
+    <tags>MassActivation Activation Startup Shutdown</tags>
   </metadata>
   <files>
     <file src="lib\**\*.dll" target="lib" />
