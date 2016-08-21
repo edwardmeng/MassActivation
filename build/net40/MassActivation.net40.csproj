@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{372427EA-7535-42B7-886D-E254E67670CE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MassActivation</RootNamespace>
+    <AssemblyName>MassActivation</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\MassActivation.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\..\MassActivation.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\ActivatingEnvironment.cs">
+      <Link>ActivatingEnvironment.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\ActivatingEnvironmentExtensions.cs">
+      <Link>ActivatingEnvironmentExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\ActivationException.cs">
+      <Link>ActivationException.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\ActivationMetadata.cs">
+      <Link>ActivationMetadata.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\ActivationPriority.cs">
+      <Link>ActivationPriority.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\ActivationPriorityAttribute.cs">
+      <Link>ActivationPriorityAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\ActivatorBuilder.cs">
+      <Link>ActivatorBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\ApplicationActivator.cs">
+      <Link>ApplicationActivator.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\AssemblyActivatorAttribute.cs">
+      <Link>AssemblyActivatorAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\AssemblyDirScanner.cs">
+      <Link>AssemblyDirScanner.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\EnvironmentName.cs">
+      <Link>EnvironmentName.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\IActivatingEnvironment.cs">
+      <Link>IActivatingEnvironment.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\IActivatorBuilder.cs">
+      <Link>IActivatorBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\Properties\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\Properties\Strings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <Link>Properties\Strings.Designer.cs</Link>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="..\..\src\TypeNameHelper.cs">
+      <Link>TypeNameHelper.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\src\Properties\Strings.resx">
+      <Link>Properties\Strings.resx</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\MassActivation.snk">
+      <Link>Properties\MassActivation.snk</Link>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
