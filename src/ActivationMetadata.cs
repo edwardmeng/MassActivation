@@ -24,7 +24,11 @@ namespace MassActivation
             {
                 if (!_priority.HasValue)
                 {
+#if NetCore
+                    var attribute = TargetMember.GetCustomAttribute<ActivationPriorityAttribute>();
+#else
                     var attribute = (ActivationPriorityAttribute)Attribute.GetCustomAttribute(TargetMember,typeof(ActivationPriorityAttribute));
+#endif
                     _priority = attribute?.Priority ?? _defaultPriority;
                 }
                 return _priority.Value;

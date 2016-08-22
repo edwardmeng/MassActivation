@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace MassActivation
@@ -52,7 +53,11 @@ namespace MassActivation
 
         private static void ProcessTypeName(Type t, StringBuilder sb, bool fullName)
         {
+#if NetCore
+            if (t.GetTypeInfo().IsGenericType)
+#else
             if (t.IsGenericType)
+#endif
             {
                 ProcessNestedGenericTypes(t, sb, fullName);
                 return;
@@ -72,7 +77,11 @@ namespace MassActivation
             var genericFullName = t.GetGenericTypeDefinition().FullName;
             var genericSimpleName = t.GetGenericTypeDefinition().Name;
             var parts = genericFullName.Split('+');
+#if NetCore
+            var genericArguments = t.GetTypeInfo().IsGenericType ? t.GenericTypeArguments : new Type[0];
+#else
             var genericArguments = t.IsGenericType ? t.GetGenericArguments() : Type.EmptyTypes;
+#endif
             var index = 0;
             var totalParts = parts.Length;
             if (totalParts == 1)

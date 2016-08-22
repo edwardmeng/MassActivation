@@ -1,12 +1,16 @@
 ﻿using System;
+#if !NetCore
 using System.Runtime.Serialization;
+#endif
 
 namespace MassActivation
 {
     /// <summary>
     /// The standard exception thrown when a <see cref="ApplicationActivator"/> has an error in startup an application.
     /// </summary>
+#if !NetCore
     [Serializable]
+#endif
     public class ActivationException : Exception
     {
         /// <summary>
@@ -33,6 +37,8 @@ namespace MassActivation
         /// </param>
         public ActivationException(string message, Exception innerException) : base(message, innerException) { }
 
+#if !NetCore
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivationException" /> class with serialized data.
         /// </summary>
@@ -49,5 +55,6 @@ namespace MassActivation
         /// The class name is null or <see cref="Exception.HResult" /> is zero (0). 
         /// </exception>
         protected ActivationException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+#endif
     }
 }

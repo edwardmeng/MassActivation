@@ -4,8 +4,10 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+#if !NetCore
 using System.Web;
 using System.Web.Compilation;
+#endif
 using MassActivation.Properties;
 
 namespace MassActivation
@@ -15,7 +17,7 @@ namespace MassActivation
     /// </summary>
     public static class ApplicationActivator
     {
-        private sealed class Pair<TFirst,TSecond>
+        private sealed class Pair<TFirst, TSecond>
         {
             public TFirst First { get; }
             public TSecond Second { get; }
@@ -65,6 +67,9 @@ namespace MassActivation
             if (_environment == null) return null;
             // Detect the startup type declared using AssemblyStartupAttribute
             AssemblyActivatorAttribute[] attributes;
+#if NetCore
+            attributes = assembly.GetCustomAttributes<AssemblyActivatorAttribute>().ToArray();
+#else
             try
             {
                 attributes = Attribute.GetCustomAttributes(assembly,typeof (AssemblyActivatorAttribute)).OfType<AssemblyActivatorAttribute>().ToArray();
@@ -73,25 +78,46 @@ namespace MassActivation
             {
                 return null;
             }
+#endif
             var startupAssemblyName = assembly.GetName().Name;
             var activatorAttribute = attributes.FirstOrDefault(attr => attr.Environment == Environment.Environment) ??
                                      attributes.FirstOrDefault(attr => string.Equals(attr.Environment, Environment.Environment, StringComparison.OrdinalIgnoreCase)) ??
                                      attributes.FirstOrDefault(attr => string.IsNullOrEmpty(attr.Environment));
             if (activatorAttribute != null)
             {
-                if (activatorAttribute.StartupType.IsGenericTypeDefinition)
+#if NetCore
+                var startupType = activatorAttribute.StartupType.GetTypeInfo();
+#else
+                var startupType = activatorAttribute.StartupType;
+#endif
+                if (startupType.IsGenericTypeDefinition)
                 {
                     throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Startup_GenericType, TypeNameHelper.GetTypeDisplayName(activatorAttribute.StartupType), startupAssemblyName));
                 }
-                if (activatorAttribute.StartupType.IsInterface || activatorAttribute.StartupType.IsAbstract)
+                if (startupType.IsInterface || startupType.IsAbstract)
                 {
                     throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_AbstractOrInterface, TypeNameHelper.GetTypeDisplayName(activatorAttribute.StartupType), startupAssemblyName));
                 }
-                return new ActivationMetadata(activatorAttribute.StartupType);
+                return new ActivationMetadata(startupType);
             }
             // Detect the startup type by using the convension name.
             var startupNameWithoutEnv = "Startup";
             var startupNameWithEnv = "Startup" + _environment.Environment;
+#if NetCore
+            Func<Type, ActivationMetadata> resolveActivator = type =>
+            {
+                var info = type?.GetTypeInfo();
+                if (info != null && !info.IsGenericTypeDefinition && !info.IsInterface && !info.IsAbstract)
+                {
+                    return new ActivationMetadata(info);
+                }
+                return null;
+            };
+            return resolveActivator(assembly.GetType(startupNameWithEnv)) ??
+                   resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithEnv)) ??
+                   resolveActivator(assembly.GetType(startupNameWithoutEnv)) ??
+                   resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv));
+#else
             Func<Type, ActivationMetadata> resolveActivator = type =>
             {
                 if (type != null && !type.IsGenericTypeDefinition && !type.IsInterface && !type.IsAbstract)
@@ -104,30 +130,46 @@ namespace MassActivation
                    resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithEnv, false)) ??
                    resolveActivator(assembly.GetType(startupNameWithoutEnv, false)) ??
                    resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv, false));
+#endif
         }
 
         private static ActivationMetadata LookupClassConstructor(ActivationMetadata type)
         {
+#if NetCore
+            var constructor = ((TypeInfo)type.TargetMember).DeclaredConstructors.SingleOrDefault(ctor => ctor.IsStatic);
+#else
             var constructor = ((Type)type.TargetMember).GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly).FirstOrDefault();
+#endif
             return constructor == null ? null : new ActivationMetadata(constructor, type.Priority);
         }
 
         private static ActivationMetadata LookupInstanceConstructor(ActivationMetadata type)
         {
-            var targetType = (Type)type.TargetMember;
-            if (targetType.IsAbstract && targetType.IsSealed)
-            {
-                return null;
-            }
-            var constructors = targetType.GetConstructors();
+#if NetCore
+            var targetType = (TypeInfo)type.TargetMember;
+            if (targetType.IsAbstract && targetType.IsSealed) return null;
+            var constructors = targetType.DeclaredConstructors.Where(ctor => !ctor.IsStatic && ctor.IsPublic).ToArray();
             if (constructors.Length == 0)
             {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.NoPublicConstructor, TypeNameHelper.GetTypeDisplayName((Type)type.TargetMember)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.NoPublicConstructor, TypeNameHelper.GetTypeDisplayName(targetType.AsType())));
             }
             if (constructors.Length > 1)
             {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_PublicConstructor, TypeNameHelper.GetTypeDisplayName((Type)type.TargetMember)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_PublicConstructor, TypeNameHelper.GetTypeDisplayName(targetType.AsType())));
             }
+#else
+            var targetType = (Type)type.TargetMember;
+            if (targetType.IsAbstract && targetType.IsSealed) return null;
+            var constructors = targetType.GetConstructors();
+            if (constructors.Length == 0)
+            {
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.NoPublicConstructor, TypeNameHelper.GetTypeDisplayName(targetType)));
+            }
+            if (constructors.Length > 1)
+            {
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_PublicConstructor, TypeNameHelper.GetTypeDisplayName(targetType)));
+            }
+#endif
             return new ActivationMetadata(constructors[0], type.Priority);
         }
 
@@ -144,7 +186,11 @@ namespace MassActivation
                                      select type;
             foreach (var constructor in staticConstructors)
             {
+#if NetCore
+                RuntimeHelpers.RunClassConstructor(((TypeInfo)constructor.TargetMember).AsType().TypeHandle);
+#else
                 RuntimeHelpers.RunClassConstructor(((Type)constructor.TargetMember).TypeHandle);
+#endif
             }
         }
 
@@ -179,8 +225,13 @@ namespace MassActivation
             }
             if (constructors.Count > 0)
             {
+#if NetCore
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.CannotCreateInstances,
+                    string.Join(", ", constructors.Select(x => TypeNameHelper.GetTypeDisplayName(((TypeInfo)x.First.TargetMember).AsType())).ToArray())));
+#else
                 throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.CannotCreateInstances,
                     string.Join(", ", constructors.Select(x => TypeNameHelper.GetTypeDisplayName((Type)x.First.TargetMember)).ToArray())));
+#endif
             }
         }
 
@@ -218,7 +269,13 @@ namespace MassActivation
             var nomalMethodsWithoutEnv = new List<MethodInfo>();
             var methodNameWithEnv = methodName + environment;
             var methodNameWithoutEnv = methodName;
-            foreach (var method in ((Type)type.TargetMember).GetMethods())
+#if NetCore
+            var methods = ((TypeInfo)type.TargetMember).DeclaredMethods.Where(method => method.IsPublic);
+#else
+            var methods = ((Type)type.TargetMember).GetMethods();
+#endif
+
+            foreach (var method in methods)
             {
                 if (type.TargetMember.Name != "Startup" + environment)
                 {
@@ -246,9 +303,14 @@ namespace MassActivation
                     }
                 }
             }
+#if NetCore
+            var typeName = TypeNameHelper.GetTypeDisplayName(((TypeInfo)type.TargetMember).AsType());
+#else
+            var typeName = TypeNameHelper.GetTypeDisplayName((Type) type.TargetMember);
+#endif
             if (nomalMethodsWithEnv.Count > 1)
             {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithEnv, TypeNameHelper.GetTypeDisplayName((Type)type.TargetMember)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithEnv, typeName));
             }
             if (nomalMethodsWithEnv.Count == 1)
             {
@@ -256,7 +318,7 @@ namespace MassActivation
             }
             if (nomalMethodsWithoutEnv.Count > 1)
             {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithoutEnv, TypeNameHelper.GetTypeDisplayName((Type)type.TargetMember)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithoutEnv, typeName));
             }
             if (nomalMethodsWithoutEnv.Count == 1)
             {
@@ -264,11 +326,11 @@ namespace MassActivation
             }
             if (genericMethodsWithEnv.Count > 0)
             {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithEnv, TypeNameHelper.GetTypeDisplayName((Type)type.TargetMember)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithEnv, typeName));
             }
             if (genericMethodsWithoutEnv.Count > 0)
             {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithoutEnv, TypeNameHelper.GetTypeDisplayName((Type)type.TargetMember)));
+                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithoutEnv, typeName));
             }
             return null;
         }
@@ -329,6 +391,19 @@ namespace MassActivation
             }
             if (methodList.Count > 0)
             {
+#if NetCore
+                if (methodList.Count == 1)
+                {
+                    throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, methodList[0].Second.TargetMember.Name,
+                        TypeNameHelper.GetTypeDisplayName(((TypeInfo)methodList[0].First.TargetMember).AsType())));
+                }
+                else
+                {
+                    throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Invoke_MultipleMethod,
+                        string.Join(", ",
+                            methodList.Select(method => TypeNameHelper.GetTypeDisplayName(((TypeInfo)method.First.TargetMember).AsType()) + "." + method.Second.TargetMember.Name).ToArray())));
+                }
+#else
                 if (methodList.Count == 1)
                 {
                     throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, methodList[0].Second.TargetMember.Name,
@@ -338,8 +413,9 @@ namespace MassActivation
                 {
                     throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Invoke_MultipleMethod,
                         string.Join(", ",
-                            methodList.Select(method => TypeNameHelper.GetTypeDisplayName((Type) method.First.TargetMember) + "." + method.Second.TargetMember.Name).ToArray())));
+                            methodList.Select(method => TypeNameHelper.GetTypeDisplayName((Type)method.First.TargetMember) + "." + method.Second.TargetMember.Name).ToArray())));
                 }
+#endif
             }
         }
 
@@ -528,12 +604,14 @@ namespace MassActivation
                 }
                 _activators = SearchActivatorTypes(_environment.GetAssemblies()).ToList();
                 Startup(_activators.ToArray());
+#if !NetCore
                 // Attach events to shutdown the application.
                 AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
                 typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
                     .GetAddMethod(true).Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
 #if Net451
                 System.Web.Hosting.HostingEnvironment.StopListening += OnStopListening;
+#endif
 #endif
             }
         }
@@ -590,7 +668,7 @@ namespace MassActivation
         /// <param name="methods">The methods to be invoked.</param>
         public static void Invoke(IEnumerable<string> methods)
         {
-            if (_environment == null|| methods == null) return;
+            if (_environment == null || methods == null) return;
             foreach (var methodName in methods)
             {
                 InvokeMethods(_activators, methodName, true);
@@ -655,9 +733,15 @@ namespace MassActivation
             if (_environment == null || _activators == null) return;
             lock (_environment)
             {
+#if NetCore
+                Shutdown((from metadata in _activators
+                          join assembly in assemblies on ((TypeInfo)metadata.TargetMember).Assembly equals assembly
+                          select metadata).ToArray());
+#else
                 Shutdown((from metadata in _activators
                           join assembly in assemblies on ((Type)metadata.TargetMember).Assembly equals assembly
                           select metadata).ToArray());
+#endif
             }
         }
 
@@ -678,6 +762,37 @@ namespace MassActivation
             }
         }
 
+        private static void DisposeInstances(IEnumerable<ActivationMetadata> types)
+        {
+            if (types == null) return;
+            foreach (var instance in types)
+            {
+                (instance.TargetInstance as IDisposable)?.Dispose();
+            }
+        }
+
+#if !NetCore
+
+#if Net451
+        private static void OnStopListening(object sender, EventArgs e)
+        {
+            Shutdown();
+            RemoveEventHandlers();
+        }
+#endif
+
+        private static void OnDomainUnload(object sender, EventArgs e)
+        {
+            Shutdown();
+            RemoveEventHandlers();
+        }
+
+        private static void OnAppDomainShutdown(object sender, BuildManagerHostUnloadEventArgs args)
+        {
+            Shutdown();
+            RemoveEventHandlers();
+        }
+
         private static void RemoveEventHandlers()
         {
             AppDomain.CurrentDomain.DomainUnload -= OnDomainUnload;
@@ -688,35 +803,8 @@ namespace MassActivation
               .GetRemoveMethod(true).Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
         }
 
-        private static void DisposeInstances(IEnumerable<ActivationMetadata> types)
-        {
-            if (types == null) return;
-            foreach (var instance in types)
-            {
-                (instance.TargetInstance as IDisposable)?.Dispose();
-            }
-        }
-
-        private static void OnDomainUnload(object sender, EventArgs e)
-        {
-            Shutdown();
-            RemoveEventHandlers();
-        }
-
-#if Net451
-        private static void OnStopListening(object sender, EventArgs e)
-        {
-            Shutdown();
-            RemoveEventHandlers();
-        }
 #endif
 
-        private static void OnAppDomainShutdown(object sender, BuildManagerHostUnloadEventArgs args)
-        {
-            Shutdown();
-            RemoveEventHandlers();
-        }
-
-#endregion
+        #endregion
     }
 }
