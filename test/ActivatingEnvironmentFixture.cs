@@ -1,98 +1,96 @@
 ﻿using System;
-using System.CodeDom.Compiler;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using Microsoft.CSharp;
-using Xunit;
+using NUnit.Framework;
 
-namespace MassActivation.Tests
+namespace MassActivation.UnitTests
 {
     public class ActivatingEnvironmentFixture
     {
-        [Fact]
+        [Test]
         public void DefaultApplicationName()
         {
             IActivatingEnvironment environment = new ActivatingEnvironment();
-            Assert.Equal(typeof (ActivatingEnvironmentFixture).Assembly.GetName().Name, environment.ApplicationName);
+            Assert.AreEqual(typeof (ActivatingEnvironmentFixture).Assembly.GetName().Name, environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void SpecifyApplicationName()
         {
             IActivatingEnvironment environment = new ActivatingEnvironment();
             environment.UseApplicationName("MassActivation");
-            Assert.Equal("MassActivation", environment.ApplicationName);
+            Assert.AreEqual("MassActivation", environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void DefaultApplicationVersion()
         {
             IActivatingEnvironment environment = new ActivatingEnvironment();
-            Assert.Equal(typeof(ActivatingEnvironmentFixture).Assembly.GetName().Version, environment.ApplicationVersion);
+            Assert.AreEqual(typeof(ActivatingEnvironmentFixture).Assembly.GetName().Version, environment.ApplicationVersion);
         }
 
-        [Fact]
+        [Test]
         public void SpecifyApplicationVersion()
         {
             IActivatingEnvironment environment = new ActivatingEnvironment();
             environment.UseApplicationVersion(new Version("1.0.5"));
-            Assert.Equal(new Version("1.0.5"), environment.ApplicationVersion);
+            Assert.AreEqual(new Version("1.0.5"), environment.ApplicationVersion);
         }
 
-        [Fact]
+        [Test]
         public void DefaultEnvironment()
         {
             Environment.SetEnvironmentVariable("ACTIVATION_ENVIRONMENT",null);
             IActivatingEnvironment environment = new ActivatingEnvironment();
-            Assert.Equal(EnvironmentName.Production, environment.Environment);
+            Assert.AreEqual(EnvironmentName.Production, environment.Environment);
         }
 
-        [Fact]
+        [Test]
         public void DefaultEnvironmentFromSystemVariable()
         {
             Environment.SetEnvironmentVariable("ACTIVATION_ENVIRONMENT", EnvironmentName.Development);
             IActivatingEnvironment environment = new ActivatingEnvironment();
-            Assert.Equal(EnvironmentName.Development, environment.Environment);
+            Assert.AreEqual(EnvironmentName.Development, environment.Environment);
         }
 
-        [Fact]
+        [Test]
         public void SpecifyEnvironment()
         {
             IActivatingEnvironment environment = new ActivatingEnvironment();
             environment.UseEnvironment(EnvironmentName.Staging);
-            Assert.Equal(EnvironmentName.Staging, environment.Environment);
+            Assert.AreEqual(EnvironmentName.Staging, environment.Environment);
         }
 
-        [Fact]
+        [Test]
         public void DefaultServiceRegistration()
         {
             IActivatingEnvironment environment = new ActivatingEnvironment();
-            Assert.Equal(environment, environment.Get<IActivatingEnvironment>());
-            Assert.Equal(environment, environment.Get<IServiceProvider>());
+            Assert.AreEqual(environment, environment.Get<IActivatingEnvironment>());
+            Assert.AreEqual(environment, environment.Get<IServiceProvider>());
             Assert.Null(environment.Get<ICustomFormatter>());
         }
 
-        [Fact]
+        [Test]
         public void CustomServiceRegistration()
         {
             IActivatingEnvironment environment = new ActivatingEnvironment();
             environment.Use<IFormatProvider>(CultureInfo.CurrentCulture);
-            Assert.Equal(CultureInfo.CurrentCulture, environment.Get<IFormatProvider>());
+            Assert.AreEqual(CultureInfo.CurrentCulture, environment.Get<IFormatProvider>());
         }
 
-        [Fact]
+        [Test]
         public void RemoveServiceRegistration()
         {
             IActivatingEnvironment environment = new ActivatingEnvironment();
-            Assert.Equal(environment, environment.Get<IServiceProvider>());
+            Assert.AreEqual(environment, environment.Get<IServiceProvider>());
             environment.Remove<IServiceProvider>();
             Assert.Null(environment.Get<IServiceProvider>());
         }
 
-        [Fact]
+        [Test]
         public void RuntimeDynamicAssembly()
         {
             var name = new AssemblyName("DynamicAssembly");
@@ -103,7 +101,7 @@ namespace MassActivation.Tests
             Assert.True(assembly.IsDynamic);
         }
 
-        [Fact]
+        [Test]
         public void NotReferenceStaticAssembly()
         {
             Assert.True(CreateAssembly(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test.dll")));
@@ -114,7 +112,7 @@ namespace MassActivation.Tests
 
         private bool CreateAssembly(string path)
         {
-            var result = new CSharpCodeProvider().CompileAssemblyFromSource(new CompilerParameters
+            var result = new Microsoft.CSharp.CSharpCodeProvider().CompileAssemblyFromSource(new System.CodeDom.Compiler.CompilerParameters
             {
                 GenerateExecutable = false,
                 GenerateInMemory = false,
@@ -127,24 +125,13 @@ namespace MassActivation.Tests
                 "[assembly: AssemblyProduct(\"MassActivation\")]"));
             if (result.Errors.HasErrors)
             {
-                foreach (CompilerError err in result.Errors)
+                foreach (System.CodeDom.Compiler.CompilerError err in result.Errors)
                 {
                     Console.Error.WriteLine(err.ErrorText);
                 }
                 return false;
             }
             return true;
-        }
-
-        [Fact]
-        public void MethodReflect()
-        {
-            var method = typeof (ActivatingEnvironmentFixture).GetMethod("ReferenceMethod");
-        }
-
-        public void ReferenceMethod(ref int value)
-        {
-            
         }
     }
 }

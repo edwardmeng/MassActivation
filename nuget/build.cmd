@@ -7,7 +7,7 @@ set version=
 if not "%PackageVersion%" == "" (
    set version=-Version %PackageVersion%
 ) else (
-   set version=-Version 1.0.1
+   set version=-Version 1.1.0
 )
 REM Determine msbuild path
 set msbuildtmp="%ProgramFiles%\MSBuild\14.0\bin\msbuild"
@@ -29,6 +29,8 @@ call :ExecuteCmd %msbuild% "..\build\net40\MassActivation.net40.csproj" /p:Confi
 IF %ERRORLEVEL% NEQ 0 goto error
 call :ExecuteCmd %msbuild% "..\build\net451\MassActivation.net451.csproj" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
 IF %ERRORLEVEL% NEQ 0 goto error
+call :ExecuteCmd %msbuild% "..\netcore\MassActivation\MassActivation.netcore.xproj" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
+IF %ERRORLEVEL% NEQ 0 goto error
 
 echo Packaging...
 set libtmp=%cd%\lib
@@ -47,6 +49,12 @@ copy ..\build\net40\bin\%config%\MassActivation.xml %libtmp%\net40 /Y
 if not exist %libtmp%\net451 mkdir %libtmp%\net451
 copy ..\build\net451\bin\%config%\MassActivation.dll %libtmp%\net451 /Y
 copy ..\build\net451\bin\%config%\MassActivation.xml %libtmp%\net451 /Y
+
+if not exist %libtmp%\netstandard1.6 mkdir %libtmp%\netstandard1.6
+copy ..\netcore\MassActivation\bin\%config%\netstandard1.6\MassActivation.dll %libtmp%\netstandard1.6 /Y
+copy ..\netcore\MassActivation\bin\%config%\netstandard1.6\MassActivation.xml %libtmp%\netstandard1.6 /Y
+copy ..\netcore\MassActivation\bin\%config%\netstandard1.6\MassActivation.deps.json %libtmp%\netstandard1.6 /Y
+
 
 call :ExecuteCmd nuget.exe pack "%cd%\MassActivation.nuspec" -OutputDirectory %packagestmp% %version%
 IF %ERRORLEVEL% NEQ 0 goto error

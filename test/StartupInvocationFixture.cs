@@ -1,17 +1,15 @@
 ﻿using System;
-using System.CodeDom.Compiler;
 using System.IO;
 using System.Linq;
-using Microsoft.CSharp;
-using Xunit;
+using NUnit.Framework;
 
-namespace MassActivation.Tests
+namespace MassActivation.UnitTests
 {
     public class StartupInvocationFixture
     {
         private bool CreateAssembly(string fileName, params string[] sourceCodes)
         {
-            var result = new CSharpCodeProvider().CompileAssemblyFromSource(new CompilerParameters(new[] {"MassActivation.dll"})
+            var result = new Microsoft.CSharp.CSharpCodeProvider().CompileAssemblyFromSource(new System.CodeDom.Compiler.CompilerParameters(new[] {"MassActivation.dll"})
             {
                 GenerateExecutable = false,
                 GenerateInMemory = false,
@@ -27,7 +25,7 @@ namespace MassActivation.Tests
             }).ToArray());
             if (result.Errors.HasErrors)
             {
-                foreach (CompilerError err in result.Errors)
+                foreach (System.CodeDom.Compiler.CompilerError err in result.Errors)
                 {
                     Console.Error.WriteLine(err.ErrorText);
                 }
@@ -44,7 +42,7 @@ namespace MassActivation.Tests
             }
         }
 
-        [Fact]
+        [Test]
         public void DefaultConvensionClassName()
         {
             Assert.True(CreateAssembly("test.dll",
@@ -55,10 +53,10 @@ namespace MassActivation.Tests
                     "}\r\n" +
                 "}"));
             ApplicationActivator.Startup();
-            Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual("TestApplication", ApplicationActivator.Environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void DefaultConvensionEnvironmentClassName()
         {
             Assert.True(CreateAssembly("test.dll",
@@ -76,10 +74,10 @@ namespace MassActivation.Tests
                 "}"
                 ));
             ApplicationActivator.UseEnvironment(EnvironmentName.Development).Startup();
-            Assert.Equal("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void DefaultConvensionEnvironmentMethodName()
         {
             Assert.True(CreateAssembly("test.dll",
@@ -94,10 +92,10 @@ namespace MassActivation.Tests
                 "}"
                 ));
             ApplicationActivator.UseEnvironment(EnvironmentName.Development).Startup();
-            Assert.Equal("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void AttributeSpecifiedDefaultStartupClass()
         {
             Assert.True(CreateAssembly("test.dll",
@@ -109,10 +107,10 @@ namespace MassActivation.Tests
                     "}\r\n" +
                 "}"));
             ApplicationActivator.Startup();
-            Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual("TestApplication", ApplicationActivator.Environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void AttributeSpecifiedEnvironmentStartupClass()
         {
             Assert.True(CreateAssembly("test.dll",
@@ -132,10 +130,10 @@ namespace MassActivation.Tests
                 "}"
                 ));
             ApplicationActivator.UseEnvironment(EnvironmentName.Development).Startup();
-            Assert.Equal("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void InvokeStaticConstructor()
         {
             Assert.True(CreateAssembly("test.dll",
@@ -149,14 +147,14 @@ namespace MassActivation.Tests
                     "}\r\n" +
                 "}"));
             ApplicationActivator.Startup();
-            Assert.Equal("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
+            Assert.AreEqual("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
         }
 
-        [Fact]
+        [Test]
         public void InvokeInstanceConstructor()
         {
             Environment.SetEnvironmentVariable("TestVariable", "Initialize");
-            Assert.Equal("Initialize", Environment.GetEnvironmentVariable("TestVariable"));
+            Assert.AreEqual("Initialize", Environment.GetEnvironmentVariable("TestVariable"));
             Assert.True(CreateAssembly("test.dll",
              "using MassActivation;\r\n" +
              "public class Startup{\r\n" +
@@ -168,10 +166,10 @@ namespace MassActivation.Tests
                  "}\r\n" +
              "}"));
             ApplicationActivator.Startup();
-            Assert.Equal("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
+            Assert.AreEqual("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
         }
 
-        [Fact]
+        [Test]
         public void InvokeInstanceConstructorWithParameters()
         {
             Assert.True(CreateAssembly("test.dll",
@@ -182,10 +180,10 @@ namespace MassActivation.Tests
                  "}\r\n" +
              "}"));
             ApplicationActivator.Startup();
-            Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual("TestApplication", ApplicationActivator.Environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void InvokeStaticMethod()
         {
             Assert.True(CreateAssembly("test.dll",
@@ -196,10 +194,10 @@ namespace MassActivation.Tests
                     "}\r\n" +
                 "}"));
             ApplicationActivator.Startup();
-            Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual("TestApplication", ApplicationActivator.Environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void InstanceConstructorDefaultInvokeSequence()
         {
             Assert.True(CreateAssembly("test1.dll",
@@ -217,10 +215,10 @@ namespace MassActivation.Tests
                   "}\r\n" +
               "}"));
             ApplicationActivator.Startup();
-            Assert.Equal("TestApplication1", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual("TestApplication1", ApplicationActivator.Environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void InstanceMethodDefaultInvokeSequence()
         {
             Assert.True(CreateAssembly("test1.dll",
@@ -238,10 +236,10 @@ namespace MassActivation.Tests
                   "}\r\n" +
               "}"));
             ApplicationActivator.Startup();
-            Assert.Equal("TestApplication1", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual("TestApplication1", ApplicationActivator.Environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void InstanceConstructorSpecifyPriority()
         {
             Assert.True(CreateAssembly("test1.dll",
@@ -260,10 +258,10 @@ namespace MassActivation.Tests
                   "}\r\n" +
               "}"));
             ApplicationActivator.Startup();
-            Assert.Equal("TestApplication2", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual("TestApplication2", ApplicationActivator.Environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void InstanceMethodSpecifyPriority()
         {
             Assert.True(CreateAssembly("test1.dll",
@@ -282,10 +280,10 @@ namespace MassActivation.Tests
                   "}\r\n" +
               "}"));
             ApplicationActivator.Startup();
-            Assert.Equal("TestApplication2", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual("TestApplication2", ApplicationActivator.Environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void StartupClassSpecifyPriority()
         {
             Assert.True(CreateAssembly("test1.dll",
@@ -304,10 +302,10 @@ namespace MassActivation.Tests
                   "}\r\n" +
               "}"));
             ApplicationActivator.Startup();
-            Assert.Equal("TestApplication2", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual("TestApplication2", ApplicationActivator.Environment.ApplicationName);
         }
 
-        [Fact]
+        [Test]
         public void StaticConstructorSpecifyPriority()
         {
             Assert.True(CreateAssembly("test1.dll",
@@ -332,10 +330,10 @@ namespace MassActivation.Tests
                     "}\r\n" +
                 "}"));
             ApplicationActivator.Startup();
-            Assert.Equal("TestApplication1", Environment.GetEnvironmentVariable("TestVariable"));
+            Assert.AreEqual("TestApplication1", Environment.GetEnvironmentVariable("TestVariable"));
         }
 
-        [Fact]
+        [Test]
         public void MixedPrioritySpecification()
         {
             Assert.True(CreateAssembly("test1.dll",
@@ -368,9 +366,9 @@ namespace MassActivation.Tests
                     "}\r\n" +
                 "}"));
             ApplicationActivator.Startup();
-            Assert.Equal("TestApplication1", Environment.GetEnvironmentVariable("TestVariable"));
-            Assert.Equal("TestApplication2", ApplicationActivator.Environment.ApplicationName);
-            Assert.Equal(new Version("1.0.1"), ApplicationActivator.Environment.ApplicationVersion);
+            Assert.AreEqual("TestApplication1", Environment.GetEnvironmentVariable("TestVariable"));
+            Assert.AreEqual("TestApplication2", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual(new Version("1.0.1"), ApplicationActivator.Environment.ApplicationVersion);
         }
     }
 }

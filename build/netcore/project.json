@@ -1,4 +1,5 @@
-﻿{
+{
+  "title": "MassActivation",
   "version": "1.0.0-*",
 
   "dependencies": {
@@ -11,19 +12,20 @@
 
   "frameworks": {
     "netstandard1.6": {
-        "imports": "dnxcore5.6",
-        "buildOptions": {
-            "compile": {
-              "include": [ "../../*.cs", "../../src/**/*.cs" ],
-              "excludeFiles": [ "../../src/ActivatingEnvironment.Net.cs", "../../src/ApplicationActivator.Net.cs" ]
-            },
-            "embed": {
-                "include": [ "../../src/**/*.resx" ]
-            },
-            "define": [ "NetCore" ],
-            "keyFile": "../../MassActivation.snk",
-            "xmlDoc": true
-        }
+      "imports": "dnxcore5.6",
+      "buildOptions": {
+        "compile": {
+          "include": [ "../../*.cs", "../../src/**/*.cs" ],
+          "excludeFiles": [ "../../src/ActivatingEnvironment.Net.cs", "../../src/ApplicationActivator.Net.cs" ]
+        },
+        "embed": {
+          "include": [ "../../src/**/*.resx" ]
+        },
+        "define": [ "NetCore" ],
+        "keyFile": "../../MassActivation.snk",
+        "xmlDoc": true,
+        "outputName": "MassActivation"
+      }
     }
   }
 }
