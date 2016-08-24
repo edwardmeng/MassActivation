@@ -27,7 +27,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;Net451</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\MassActivation.xml</DocumentationFile>
@@ -52,6 +52,9 @@
     <Compile Include="..\..\src\ActivatingEnvironment.cs">
       <Link>ActivatingEnvironment.cs</Link>
     </Compile>
+    <Compile Include="..\..\src\ActivatingEnvironment.Net.cs">
+      <Link>ActivatingEnvironment.Net.cs</Link>
+    </Compile>
     <Compile Include="..\..\src\ActivatingEnvironmentExtensions.cs">
       <Link>ActivatingEnvironmentExtensions.cs</Link>
     </Compile>
@@ -73,11 +76,11 @@
     <Compile Include="..\..\src\ApplicationActivator.cs">
       <Link>ApplicationActivator.cs</Link>
     </Compile>
+    <Compile Include="..\..\src\ApplicationActivator.Net.cs">
+      <Link>ApplicationActivator.Net.cs</Link>
+    </Compile>
     <Compile Include="..\..\src\AssemblyActivatorAttribute.cs">
       <Link>AssemblyActivatorAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\AssemblyDirScanner.cs">
-      <Link>AssemblyDirScanner.cs</Link>
     </Compile>
     <Compile Include="..\..\src\EnvironmentName.cs">
       <Link>EnvironmentName.cs</Link>

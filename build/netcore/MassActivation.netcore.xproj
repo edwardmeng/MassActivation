@@ -13,12 +13,14 @@
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="*.cs" />
     <Compile Include="..\..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="..\..\src\ActivatingEnvironment.cs">
       <Link>ActivatingEnvironment.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\ActivatingEnvironment.Core.cs">
+      <Link>ActivatingEnvironment.Core.cs</Link>
     </Compile>
     <Compile Include="..\..\src\ActivatingEnvironmentExtensions.cs">
       <Link>ActivatingEnvironmentExtensions.cs</Link>
@@ -41,11 +43,11 @@
     <Compile Include="..\..\src\ApplicationActivator.cs">
       <Link>ApplicationActivator.cs</Link>
     </Compile>
+    <Compile Include="..\..\src\ApplicationActivator.Core.cs">
+      <Link>ApplicationActivator.Core.cs</Link>
+    </Compile>
     <Compile Include="..\..\src\AssemblyActivatorAttribute.cs">
       <Link>AssemblyActivatorAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\AssemblyDirScanner.cs">
-      <Link>AssemblyDirScanner.cs</Link>
     </Compile>
     <Compile Include="..\..\src\EnvironmentName.cs">
       <Link>EnvironmentName.cs</Link>
@@ -59,22 +61,21 @@
     <Compile Include="..\..\src\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\..\src\TypeNameHelper.cs">
+      <Link>TypeNameHelper.cs</Link>
+    </Compile>
+    <None Include="..\..\MassActivation.snk">
+      <Link>Properties\MassActivation.snk</Link>
+    </None>
     <Compile Include="..\..\src\Properties\Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <Link>Properties\Strings.Designer.cs</Link>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
-    <Compile Include="..\..\src\TypeNameHelper.cs">
-      <Link>TypeNameHelper.cs</Link>
-    </Compile>
     <EmbeddedResource Include="..\..\src\Properties\Strings.resx">
       <Link>Properties\Strings.resx</Link>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
-    <None Include="..\..\MassActivation.snk">
-      <Link>Properties\MassActivation.snk</Link>
-    </None>
   </ItemGroup>
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>

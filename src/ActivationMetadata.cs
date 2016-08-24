@@ -34,5 +34,37 @@ namespace MassActivation
                 return _priority.Value;
             }
         }
+
+        public Type GetTargetType()
+        {
+            switch (TargetMember.MemberType)
+            {
+                case MemberTypes.Constructor:
+                case MemberTypes.Event:
+                case MemberTypes.Field:
+                case MemberTypes.Method:
+                case MemberTypes.Property:
+                    return TargetMember.DeclaringType;
+                case MemberTypes.TypeInfo:
+                case MemberTypes.NestedType:
+#if NetCore
+                    return ((TypeInfo) TargetMember).AsType();
+#else
+                    return (Type) TargetMember;
+#endif
+            }
+            return null;
+        }
+
+        public Assembly GetTargetAssembly()
+        {
+            var type = GetTargetType();
+            if (type == null) return null;
+#if NetCore
+            return type.GetTypeInfo().Assembly;
+#else
+            return type.Assembly;
+#endif
+        }
     }
 }

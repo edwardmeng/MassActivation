@@ -33,6 +33,42 @@ namespace MassActivation
             return sb.ToString();
         }
 
+        public static string GetMethodDisplayName(MethodInfo method, bool fullName = true)
+        {
+            var sb = new StringBuilder();
+            sb.Append(method.Name);
+            if (method.IsGenericMethod)
+            {
+                var args = method.GetGenericArguments();
+                AppendGenericArguments(args, 0, args.Length, sb, fullName);
+            }
+            sb.Append("(");
+            var parameters = method.GetParameters();
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                if (i > 0) sb.Append(", ");
+                if (parameters[i].IsOut)
+                {
+                    sb.Append("out ");
+                }
+                else if (parameters[i].ParameterType.IsByRef)
+                {
+                    sb.Append("ref ");
+                }
+                if (parameters[i].ParameterType.IsByRef)
+                {
+                    ProcessTypeName(parameters[i].ParameterType.GetElementType(), sb, fullName);
+                }
+                else
+                {
+                    ProcessTypeName(parameters[i].ParameterType, sb, fullName);
+                }
+                sb.Append(" ").Append(parameters[i].Name);
+            }
+            sb.Append(")");
+            return sb.ToString();
+        }
+
         private static void AppendGenericArguments(Type[] args, int startIndex, int numberOfArgsToAppend, StringBuilder sb, bool fullName)
         {
             var totalArgs = args.Length;

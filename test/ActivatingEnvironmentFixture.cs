@@ -135,5 +135,16 @@ namespace MassActivation.Tests
             }
             return true;
         }
+
+        [Fact]
+        public void MethodReflect()
+        {
+            var method = typeof (ActivatingEnvironmentFixture).GetMethod("ReferenceMethod");
+        }
+
+        public void ReferenceMethod(ref int value)
+        {
+            
+        }
     }
 }

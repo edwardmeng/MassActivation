@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Reflection;
+
 namespace MassActivation.Properties {
     using System;
     
@@ -38,8 +40,15 @@ namespace MassActivation.Properties {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
-                if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MassActivation.Properties.Strings", typeof(Strings).Assembly);
+                if (object.ReferenceEquals(resourceMan, null))
+                {
+                    Assembly assembly;
+#if NetCore
+                    assembly = typeof (Strings).GetTypeInfo().Assembly;
+#else
+                    assembly = typeof (Strings).Assembly;
+#endif
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MassActivation.Properties.Strings", assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
