@@ -4,17 +4,55 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+#if NetCore
+using Microsoft.Extensions.PlatformAbstractions;
+#endif
 using NUnit.Framework;
 
 namespace MassActivation.UnitTests
 {
     public class ActivatingEnvironmentFixture
     {
+        private AssemblyName GetAssemblyName(Type type)
+        {
+#if NetCore
+            return type.GetTypeInfo().Assembly.GetName();
+#else
+            return type.Assembly.GetName();
+#endif
+        }
+
+        private string GetBaseDirectory()
+        {
+#if NetCore
+            return PlatformServices.Default.Application.ApplicationBasePath;
+#else
+            return AppDomain.CurrentDomain.BaseDirectory;
+#endif
+        }
+        [SetUp]
+        public void ClearAssemblies()
+        {
+            var baseDir = new DirectoryInfo(GetBaseDirectory());
+            foreach (var file in baseDir.GetFiles("test*.dll"))
+            {
+                file.Delete();
+            }
+            baseDir = baseDir.Parent;
+            if (baseDir != null)
+            {
+                foreach (var file in baseDir.GetFiles("*.dll"))
+                {
+                    file.Delete();
+                }
+            }
+        }
+
         [Test]
         public void DefaultApplicationName()
         {
             IActivatingEnvironment environment = new ActivatingEnvironment();
-            Assert.AreEqual(typeof (ActivatingEnvironmentFixture).Assembly.GetName().Name, environment.ApplicationName);
+            Assert.AreEqual(GetAssemblyName(typeof(ActivatingEnvironmentFixture)).Name, environment.ApplicationName);
         }
 
         [Test]
@@ -29,7 +67,7 @@ namespace MassActivation.UnitTests
         public void DefaultApplicationVersion()
         {
             IActivatingEnvironment environment = new ActivatingEnvironment();
-            Assert.AreEqual(typeof(ActivatingEnvironmentFixture).Assembly.GetName().Version, environment.ApplicationVersion);
+            Assert.AreEqual(GetAssemblyName(typeof(ActivatingEnvironmentFixture)).Version, environment.ApplicationVersion);
         }
 
         [Test]
@@ -43,7 +81,7 @@ namespace MassActivation.UnitTests
         [Test]
         public void DefaultEnvironment()
         {
-            Environment.SetEnvironmentVariable("ACTIVATION_ENVIRONMENT",null);
+            Environment.SetEnvironmentVariable("ACTIVATION_ENVIRONMENT", null);
             IActivatingEnvironment environment = new ActivatingEnvironment();
             Assert.AreEqual(EnvironmentName.Production, environment.Environment);
         }
@@ -104,34 +142,23 @@ namespace MassActivation.UnitTests
         [Test]
         public void NotReferenceStaticAssembly()
         {
-            Assert.True(CreateAssembly(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test.dll")));
+            Assert.True(CompileHelper.CreateAssembly(Path.Combine(GetBaseDirectory(), "test.dll")));
             IActivatingEnvironment environment = new ActivatingEnvironment();
             var assembly = environment.GetAssemblies().SingleOrDefault(x => x.GetName().Name == "test");
             Assert.NotNull(assembly);
         }
 
-        private bool CreateAssembly(string path)
+        [Test]
+        public void RuntimeLoadedAssembly()
         {
-            var result = new Microsoft.CSharp.CSharpCodeProvider().CompileAssemblyFromSource(new System.CodeDom.Compiler.CompilerParameters
-            {
-                GenerateExecutable = false,
-                GenerateInMemory = false,
-                IncludeDebugInformation = false,
-                OutputAssembly = path
-            }, string.Format(
-                "using System.Reflection;\r\n" +
-                "[assembly: AssemblyVersion(\"1.0.5\")]\r\n" +
-                "[assembly: AssemblyFileVersion(\"1.0.5\")]\r\n" +
-                "[assembly: AssemblyProduct(\"MassActivation\")]"));
-            if (result.Errors.HasErrors)
-            {
-                foreach (System.CodeDom.Compiler.CompilerError err in result.Errors)
-                {
-                    Console.Error.WriteLine(err.ErrorText);
-                }
-                return false;
-            }
-            return true;
+            var assemblyPath = Path.Combine(new DirectoryInfo(GetBaseDirectory()).Parent?.FullName, "test.dll");
+            Assert.True(CompileHelper.CreateAssembly(assemblyPath));
+            IActivatingEnvironment environment = new ActivatingEnvironment();
+            var assembly = environment.GetAssemblies().SingleOrDefault(x => x.GetName().Name == "test");
+            Assert.Null(assembly);
+            Assembly.LoadFile(assemblyPath);
+            assembly = environment.GetAssemblies().SingleOrDefault(x => x.GetName().Name == "test");
+            Assert.NotNull(assembly);
         }
     }
 }

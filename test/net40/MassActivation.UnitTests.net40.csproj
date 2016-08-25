@@ -65,6 +65,7 @@
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="..\StartupInvocationFixture.cs" />
+    <Compile Include="..\CompileHelper.Net.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\MassActivation.snk">

@@ -15,7 +15,7 @@
       "imports": "dnxcore5.6",
       "buildOptions": {
         "compile": {
-          "include": [ "../../*.cs", "../../src/**/*.cs" ],
+          "include": [ "../../GlobalAssemblyInfo.cs", "../../src/**/*.cs" ],
           "excludeFiles": [ "../../src/ActivatingEnvironment.Net.cs", "../../src/ApplicationActivator.Net.cs" ]
         },
         "embed": {

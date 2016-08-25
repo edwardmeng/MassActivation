@@ -3,7 +3,7 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "MassActivation": {"target": "project"},
+    "MassActivation": { "target": "project" },
     "NETStandard.Library": "1.6.0",
     "NUnit": "3.4.1"
   },
@@ -13,7 +13,7 @@
       "imports": "dnxcore50",
       "buildOptions": {
         "compile": {
-          "include": [ "../*.cs", "../../*.cs" ]
+          "include": [ "../../GlobalAssemblyInfo.cs", "../../test/*.cs" ]
         },
         "define": [ "NetCore" ],
         "keyFile": "../../MassActivation.snk",
