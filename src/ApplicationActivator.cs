@@ -36,8 +36,8 @@ namespace MassActivation
         private static string _environmentName;
         private static string _applicationName;
         private static Version _applicationVersion;
-        private static string[] _startupMethodNames = { "Configuration" };
-        private static string[] _shutdownMethodNames = { "Unload" };
+        private static string[] _startupMethodNames = { "Initialize", "Configuration", "Load" };
+        private static string[] _shutdownMethodNames = { "Unload", "Shutdown" };
         private static ActivatingEnvironment _environment;
         private static List<ActivationMetadata> _activators;
 

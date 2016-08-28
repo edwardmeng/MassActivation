@@ -25,6 +25,9 @@
     <Compile Include="..\..\test\StartupInvocationFixture.cs">
       <Link>StartupInvocationFixture.cs</Link>
     </Compile>
+    <Compile Include="..\ShundownInvocationFixture.cs" >
+      <Link>ShundownInvocationFixture.cs</Link>
+    </Compile>
     <Compile Include="..\..\test\CompileHelper.Core.cs">
       <Link>CompileHelper.Core.cs</Link>
     </Compile>

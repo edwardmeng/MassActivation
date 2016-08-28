@@ -1,6 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using NUnit.Framework;
 
 namespace MassActivation.UnitTests
@@ -10,19 +8,7 @@ namespace MassActivation.UnitTests
         [SetUp]
         public void ClearAssemblies()
         {
-            var baseDir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-            foreach (var file in baseDir.GetFiles("test*.dll"))
-            {
-                file.Delete();
-            }
-            baseDir = baseDir.Parent;
-            if (baseDir != null)
-            {
-                foreach (var file in baseDir.GetFiles("*.dll"))
-                {
-                    file.Delete();
-                }
-            }
+            CompileHelper.ClearAssemblies();
         }
 
         [Test]

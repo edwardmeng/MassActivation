@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace MassActivation.UnitTests
 {
@@ -8,7 +9,8 @@ namespace MassActivation.UnitTests
     {
         public static bool CreateAssembly(string fileName, params string[] sourceCodes)
         {
-            var result = new Microsoft.CSharp.CSharpCodeProvider().CompileAssemblyFromSource(new System.CodeDom.Compiler.CompilerParameters(new[] { "MassActivation.dll" })
+            var result = new Microsoft.CSharp.CSharpCodeProvider().CompileAssemblyFromSource(new System.CodeDom.Compiler.CompilerParameters(
+                new[] { Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MassActivation.dll") })
             {
                 GenerateExecutable = false,
                 GenerateInMemory = false,
@@ -26,11 +28,28 @@ namespace MassActivation.UnitTests
             {
                 foreach (System.CodeDom.Compiler.CompilerError err in result.Errors)
                 {
-                    Console.Error.WriteLine(err.ErrorText);
+                    Console.WriteLine(err.ErrorText);
                 }
                 return false;
             }
             return true;
+        }
+
+        public static void ClearAssemblies()
+        {
+            var baseDir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            foreach (var file in baseDir.GetFiles("test*.dll"))
+            {
+                file.Delete();
+            }
+            baseDir = baseDir.Parent;
+            if (baseDir != null)
+            {
+                foreach (var file in baseDir.GetFiles("*.dll"))
+                {
+                    file.Delete();
+                }
+            }
         }
     }
 }
