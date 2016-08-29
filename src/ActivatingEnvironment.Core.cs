@@ -16,8 +16,6 @@ namespace MassActivation
             ApplicationVersion = string.IsNullOrEmpty(application.ApplicationVersion) ? null : new Version(application.ApplicationVersion);
         }
 
-        #region Methods
-
         /// <summary>
         /// Returns all the assemblies to be used by the hosting application.
         /// </summary>
@@ -26,7 +24,5 @@ namespace MassActivation
         {
             return DependencyContext.Default.GetDefaultAssemblyNames().Select(Assembly.Load);
         }
-
-        #endregion
     }
 }

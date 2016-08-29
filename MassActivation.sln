@@ -53,6 +53,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MassActivation.UnitTests.ne
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassActivation.UnitTests.net40", "test\net40\MassActivation.UnitTests.net40.csproj", "{67F76F6F-A1A1-481D-BC58-B82287729311}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MassActivation.NetCore.Services", "netcore\MassActivation.Services\MassActivation.NetCore.Services.xproj", "{292B0A83-77E7-4673-BCED-455926309115}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -115,6 +117,10 @@ Global
 		{67F76F6F-A1A1-481D-BC58-B82287729311}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67F76F6F-A1A1-481D-BC58-B82287729311}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{67F76F6F-A1A1-481D-BC58-B82287729311}.Release|Any CPU.Build.0 = Release|Any CPU
+		{292B0A83-77E7-4673-BCED-455926309115}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{292B0A83-77E7-4673-BCED-455926309115}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{292B0A83-77E7-4673-BCED-455926309115}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{292B0A83-77E7-4673-BCED-455926309115}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -134,5 +140,6 @@ Global
 		{8ECD2239-016F-4A06-BA12-90B37C374B51} = {D55E3A34-23BA-4576-BC80-212AF4E65335}
 		{4530A68F-00F2-4E8E-A45F-AB777BFD1EA8} = {1221F874-7083-4EA7-94CF-D8381B65EACB}
 		{67F76F6F-A1A1-481D-BC58-B82287729311} = {1221F874-7083-4EA7-94CF-D8381B65EACB}
+		{292B0A83-77E7-4673-BCED-455926309115} = {5E34DAA2-083D-426F-B121-F4CA03F96DF4}
 	EndGlobalSection
 EndGlobal

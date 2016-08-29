@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace MassActivation.UnitTests
 {
@@ -31,6 +32,23 @@ namespace MassActivation.UnitTests
                 return false;
             }
             return true;
+        }
+
+        public static void ClearAssemblies()
+        {
+            var baseDir = new DirectoryInfo(PlatformServices.Default.Application.ApplicationBasePath);
+            foreach (var file in baseDir.GetFiles("test*.dll"))
+            {
+                file.Delete();
+            }
+            baseDir = baseDir.Parent;
+            if (baseDir != null)
+            {
+                foreach (var file in baseDir.GetFiles("*.dll"))
+                {
+                    file.Delete();
+                }
+            }
         }
     }
 }

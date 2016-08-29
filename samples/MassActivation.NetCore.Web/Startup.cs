@@ -20,6 +20,7 @@ namespace MassActivation.NetCore.Web
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
+            ApplicationActivator.UseEnvironment(env.EnvironmentName);
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -29,6 +30,11 @@ namespace MassActivation.NetCore.Web
         {
             // Add framework services.
             services.AddMvc();
+
+            foreach (var service in services)
+            {
+                ApplicationActivator.UseService(service.ServiceType, service.ImplementationInstance);
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,7 +46,6 @@ namespace MassActivation.NetCore.Web
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseBrowserLink();
             }
             else
             {
@@ -55,6 +60,7 @@ namespace MassActivation.NetCore.Web
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+            ApplicationActivator.Startup();
         }
     }
 }

@@ -5,14 +5,14 @@
   "dependencies": {
     "NETStandard.Library": "1.6.0",
     "System.ComponentModel": "4.0.1",
+    "System.Runtime.Loader": "4.0.0",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0",
-    "Microsoft.Extensions.DependencyModel": "1.0.0",
-    "system.runtime.loader": "4.0.0"
+    "Microsoft.Extensions.DependencyModel": "1.0.0"
   },
 
   "frameworks": {
     "netstandard1.6": {
-      "imports": "dnxcore5.6",
+      "imports": "dotnet5.6",
       "buildOptions": {
         "compile": {
           "include": [ "../../GlobalAssemblyInfo.cs", "../../src/**/*.cs" ],

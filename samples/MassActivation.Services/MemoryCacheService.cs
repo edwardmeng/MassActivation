@@ -1,13 +1,14 @@
-﻿using System.Collections;
+﻿using System.Collections.Generic;
 
 namespace MassActivation.Services
 {
     public class MemoryCacheService : ICacheService
     {
-        private readonly Hashtable _cache = new Hashtable();
+        private readonly IDictionary<string,object> _cache = new Dictionary<string, object>();
         public object Get(string key)
         {
-            return _cache[key];
+            object value;
+            return _cache.TryGetValue(key, out value) ? value : null;
         }
 
         public void Set(string key, object value)

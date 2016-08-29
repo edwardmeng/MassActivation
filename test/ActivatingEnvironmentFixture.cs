@@ -33,19 +33,7 @@ namespace MassActivation.UnitTests
         [SetUp]
         public void ClearAssemblies()
         {
-            var baseDir = new DirectoryInfo(GetBaseDirectory());
-            foreach (var file in baseDir.GetFiles("test*.dll"))
-            {
-                file.Delete();
-            }
-            baseDir = baseDir.Parent;
-            if (baseDir != null)
-            {
-                foreach (var file in baseDir.GetFiles("*.dll"))
-                {
-                    file.Delete();
-                }
-            }
+            CompileHelper.ClearAssemblies();
         }
 
         [Test]
@@ -142,7 +130,7 @@ namespace MassActivation.UnitTests
         [Test]
         public void NotReferenceStaticAssembly()
         {
-            Assert.True(CompileHelper.CreateAssembly(Path.Combine(GetBaseDirectory(), "test.dll")));
+            Assert.True(CompileHelper.CreateAssembly("test.dll"));
             IActivatingEnvironment environment = new ActivatingEnvironment();
             var assembly = environment.GetAssemblies().SingleOrDefault(x => x.GetName().Name == "test");
             Assert.NotNull(assembly);
@@ -152,7 +140,7 @@ namespace MassActivation.UnitTests
         public void RuntimeLoadedAssembly()
         {
             var assemblyPath = Path.Combine(new DirectoryInfo(GetBaseDirectory()).Parent?.FullName, "test.dll");
-            Assert.True(CompileHelper.CreateAssembly(assemblyPath));
+            Assert.True(CompileHelper.CreateAssembly("../test.dll"));
             IActivatingEnvironment environment = new ActivatingEnvironment();
             var assembly = environment.GetAssemblies().SingleOrDefault(x => x.GetName().Name == "test");
             Assert.Null(assembly);

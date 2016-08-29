@@ -9,11 +9,12 @@
   },
 
   "frameworks": {
-    "netstandard1.6": {
-      "imports": "dnxcore50",
+    "netcoreapp1.0": {
+      "imports": "dotnet5.6",
       "buildOptions": {
         "compile": {
-          "include": [ "../../GlobalAssemblyInfo.cs", "../../test/*.cs" ]
+          "include": [ "../../GlobalAssemblyInfo.cs", "../../test/*.cs" ],
+          "exclude": [ "../../test/CompileHelper.Net.cs" ]
         },
         "define": [ "NetCore" ],
         "keyFile": "../../MassActivation.snk",
