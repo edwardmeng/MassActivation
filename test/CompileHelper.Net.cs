@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace MassActivation.UnitTests
 {
@@ -18,11 +17,10 @@ namespace MassActivation.UnitTests
                 OutputAssembly = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName)
             }, sourceCodes.Concat(new[]
             {
-                string.Format(
                     "using System.Reflection;\r\n" +
                     "[assembly: AssemblyVersion(\"1.0.5\")]\r\n" +
                     "[assembly: AssemblyFileVersion(\"1.0.5\")]\r\n" +
-                    "[assembly: AssemblyProduct(\"MassActivation\")]")
+                    "[assembly: AssemblyProduct(\"MassActivation\")]"
             }).ToArray());
             if (result.Errors.HasErrors)
             {

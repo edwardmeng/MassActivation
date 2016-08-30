@@ -1,6 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace MassActivation.UnitTests
@@ -9,29 +13,46 @@ namespace MassActivation.UnitTests
     {
         public static bool CreateAssembly(string fileName, params string[] sourceCodes)
         {
-            var result = new Microsoft.CSharp.CSharpCodeProvider().CompileAssemblyFromSource(new System.CodeDom.Compiler.CompilerParameters(new[] { "MassActivation.dll" })
-            {
-                GenerateExecutable = false,
-                GenerateInMemory = false,
-                IncludeDebugInformation = false,
-                OutputAssembly = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName)
-            }, sourceCodes.Concat(new[]
-            {
-                string.Format(
+            var compilation = CSharpCompilation.Create(Path.GetFileNameWithoutExtension(fileName),
+                    options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release),
+                    references: new MetadataReference[]
+                    {
+                        MetadataReference.CreateFromFile(Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "MassActivation.dll"))
+                    })
+                .AddSyntaxTrees(sourceCodes.Concat(new[]
+                {
                     "using System.Reflection;\r\n" +
                     "[assembly: AssemblyVersion(\"1.0.5\")]\r\n" +
                     "[assembly: AssemblyFileVersion(\"1.0.5\")]\r\n" +
-                    "[assembly: AssemblyProduct(\"MassActivation\")]")
-            }).ToArray());
-            if (result.Errors.HasErrors)
+                    "[assembly: AssemblyProduct(\"MassActivation\")]"
+                }).Select(source => CSharpSyntaxTree.ParseText(SourceText.From(source, Encoding.UTF8))));
+            using (var assemblyStream = new MemoryStream())
             {
-                foreach (System.CodeDom.Compiler.CompilerError err in result.Errors)
+                var result = compilation.Emit(assemblyStream);
+                if (!result.Success)
                 {
-                    Console.Error.WriteLine(err.ErrorText);
+                    foreach (var diagnostic in result.Diagnostics)
+                    {
+                        if (IsError(diagnostic))
+                        {
+                            Console.WriteLine(diagnostic.GetMessage());
+                        }
+                    }
+                    return false;
                 }
-                return false;
+                assemblyStream.Seek(0, SeekOrigin.Begin);
+                using (var fileStream = File.OpenWrite(Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, fileName)))
+                {
+                    assemblyStream.CopyTo(fileStream);
+                }
+                //System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromStream(assemblyStream);
+                return true;
             }
-            return true;
+        }
+
+        private static bool IsError(Diagnostic diagnostic)
+        {
+            return diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error;
         }
 
         public static void ClearAssemblies()

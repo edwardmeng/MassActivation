@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 
@@ -25,7 +24,7 @@ namespace MassActivation.UnitTests
                 "}"));
             ApplicationActivator.Startup();
             Assert.AreNotEqual("TestApplication", ApplicationActivator.Environment.ApplicationName);
-            ApplicationActivator.Shutdown(Assembly.Load("test.dll"));
+            ApplicationActivator.Shutdown(Assembly.Load(new AssemblyName("test")));
             Assert.AreEqual("TestApplication", ApplicationActivator.Environment.ApplicationName);
         }
 
@@ -41,7 +40,7 @@ namespace MassActivation.UnitTests
                 "}"));
             ApplicationActivator.Startup();
             Assert.AreNotEqual("TestApplication", ApplicationActivator.Environment.ApplicationName);
-            ApplicationActivator.Shutdown(Assembly.Load("test.dll"));
+            ApplicationActivator.Shutdown(Assembly.Load(new AssemblyName("test")));
             Assert.AreEqual("TestApplication", ApplicationActivator.Environment.ApplicationName);
         }
 
@@ -57,7 +56,7 @@ namespace MassActivation.UnitTests
                 "}"));
             ApplicationActivator.Startup();
             Assert.AreNotEqual("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
-            ApplicationActivator.Shutdown(Assembly.Load("test.dll"));
+            ApplicationActivator.Shutdown(Assembly.Load(new AssemblyName("test")));
             Assert.AreEqual("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
         }
 
@@ -79,7 +78,7 @@ namespace MassActivation.UnitTests
                   "}\r\n" +
               "}"));
             ApplicationActivator.Startup();
-            ApplicationActivator.Shutdown(Assembly.LoadFrom(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test1.dll")), Assembly.LoadFrom(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test2.dll")));
+            ApplicationActivator.Shutdown(Assembly.Load(new AssemblyName("test1")), Assembly.Load(new AssemblyName("test2")));
             Assert.AreEqual("TestApplication2", ApplicationActivator.Environment.ApplicationName);
         }
 
@@ -102,7 +101,7 @@ namespace MassActivation.UnitTests
                   "}\r\n" +
               "}"));
             ApplicationActivator.Startup();
-            ApplicationActivator.Shutdown(Assembly.LoadFrom(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test1.dll")), Assembly.LoadFrom(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test2.dll")));
+            ApplicationActivator.Shutdown(Assembly.Load(new AssemblyName("test1")), Assembly.Load(new AssemblyName("test2")));
             Assert.AreEqual("TestApplication1", ApplicationActivator.Environment.ApplicationName);
         }
 
@@ -125,7 +124,7 @@ namespace MassActivation.UnitTests
                   "}\r\n" +
               "}"));
             ApplicationActivator.Startup();
-            ApplicationActivator.Shutdown(Assembly.LoadFrom(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test1.dll")), Assembly.LoadFrom(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test2.dll")));
+            ApplicationActivator.Shutdown(Assembly.Load(new AssemblyName("test1")), Assembly.Load(new AssemblyName("test2")));
             Assert.AreEqual("TestApplication1", ApplicationActivator.Environment.ApplicationName);
         }
 
@@ -149,7 +148,7 @@ namespace MassActivation.UnitTests
                     "}\r\n" +
                 "}"));
             ApplicationActivator.Startup();
-            ApplicationActivator.Shutdown(Assembly.LoadFrom(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test1.dll")), Assembly.LoadFrom(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test2.dll")));
+            ApplicationActivator.Shutdown(Assembly.Load(new AssemblyName("test1")), Assembly.Load(new AssemblyName("test2")));
             Assert.AreEqual(new Version("1.0.5"), ApplicationActivator.Environment.ApplicationVersion);
         }
     }

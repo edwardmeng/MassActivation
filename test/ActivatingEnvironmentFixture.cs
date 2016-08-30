@@ -3,9 +3,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 #if NetCore
+using System.Runtime.Loader;
 using Microsoft.Extensions.PlatformAbstractions;
+#else
+using System.Reflection.Emit;
 #endif
 using NUnit.Framework;
 
@@ -22,14 +24,6 @@ namespace MassActivation.UnitTests
 #endif
         }
 
-        private string GetBaseDirectory()
-        {
-#if NetCore
-            return PlatformServices.Default.Application.ApplicationBasePath;
-#else
-            return AppDomain.CurrentDomain.BaseDirectory;
-#endif
-        }
         [SetUp]
         public void ClearAssemblies()
         {
@@ -116,6 +110,8 @@ namespace MassActivation.UnitTests
             Assert.Null(environment.Get<IServiceProvider>());
         }
 
+#if !NetCore
+
         [Test]
         public void RuntimeDynamicAssembly()
         {
@@ -126,6 +122,8 @@ namespace MassActivation.UnitTests
             Assert.NotNull(assembly);
             Assert.True(assembly.IsDynamic);
         }
+
+#endif
 
         [Test]
         public void NotReferenceStaticAssembly()
@@ -139,12 +137,21 @@ namespace MassActivation.UnitTests
         [Test]
         public void RuntimeLoadedAssembly()
         {
-            var assemblyPath = Path.Combine(new DirectoryInfo(GetBaseDirectory()).Parent?.FullName, "test.dll");
+#if NetCore
+            var basePath = PlatformServices.Default.Application.ApplicationBasePath;
+#else
+            var basePath =  AppDomain.CurrentDomain.BaseDirectory;
+#endif
+            var assemblyPath = Path.Combine(new DirectoryInfo(basePath).Parent?.FullName, "test.dll");
             Assert.True(CompileHelper.CreateAssembly("../test.dll"));
             IActivatingEnvironment environment = new ActivatingEnvironment();
             var assembly = environment.GetAssemblies().SingleOrDefault(x => x.GetName().Name == "test");
             Assert.Null(assembly);
+#if NetCore
+            AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
+#else
             Assembly.LoadFile(assemblyPath);
+#endif
             assembly = environment.GetAssemblies().SingleOrDefault(x => x.GetName().Name == "test");
             Assert.NotNull(assembly);
         }
