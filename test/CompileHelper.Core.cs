@@ -13,12 +13,14 @@ namespace MassActivation.UnitTests
     {
         public static bool CreateAssembly(string fileName, params string[] sourceCodes)
         {
+            var path = System.Environment.GetEnvironmentVariable("USERPROFILE");
             var compilation = CSharpCompilation.Create(Path.GetFileNameWithoutExtension(fileName),
                     options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release),
                     references: new MetadataReference[]
                     {
                         MetadataReference.CreateFromFile(Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "MassActivation.dll")),
-                        //MetadataReference.CreateFromFile()
+                        MetadataReference.CreateFromFile(Path.Combine(path,@".nuget\packages\System.Runtime\4.1.0\ref\netstandard1.5\System.Runtime.dll")),
+                        MetadataReference.CreateFromFile(Path.Combine(path,@".nuget\packages\System.ComponentModel\4.0.1\ref\netstandard1.0\System.ComponentModel.dll"))
                     })
                 .AddSyntaxTrees(sourceCodes.Concat(new[]
                 {
