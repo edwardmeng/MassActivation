@@ -17,7 +17,8 @@ namespace MassActivation.UnitTests
                     options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release),
                     references: new MetadataReference[]
                     {
-                        MetadataReference.CreateFromFile(Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "MassActivation.dll"))
+                        MetadataReference.CreateFromFile(Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "MassActivation.dll")),
+                        //MetadataReference.CreateFromFile()
                     })
                 .AddSyntaxTrees(sourceCodes.Concat(new[]
                 {

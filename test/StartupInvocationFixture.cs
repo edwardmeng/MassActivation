@@ -1,17 +1,32 @@
 ﻿using System;
+#if NetCore
+using Xunit;
+#else
 using NUnit.Framework;
+#endif
 
 namespace MassActivation.UnitTests
 {
     public class StartupInvocationFixture
     {
+#if NetCore
+        public StartupInvocationFixture()
+        {
+            CompileHelper.ClearAssemblies();
+        }
+#else
         [SetUp]
         public void ClearAssemblies()
         {
             CompileHelper.ClearAssemblies();
         }
+#endif
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void DefaultConvensionClassName()
         {
             Assert.True(CompileHelper.CreateAssembly("test.dll",
@@ -22,10 +37,18 @@ namespace MassActivation.UnitTests
                     "}\r\n" +
                 "}"));
             ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
+#else
             Assert.AreEqual("TestApplication", ApplicationActivator.Environment.ApplicationName);
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void DefaultConvensionEnvironmentClassName()
         {
             Assert.True(CompileHelper.CreateAssembly("test.dll",
@@ -43,10 +66,18 @@ namespace MassActivation.UnitTests
                 "}"
                 ));
             ApplicationActivator.UseEnvironment(EnvironmentName.Development).Startup();
+#if NetCore
+            Assert.Equal("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
+#else
             Assert.AreEqual("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void DefaultConvensionEnvironmentMethodName()
         {
             Assert.True(CompileHelper.CreateAssembly("test.dll",
@@ -61,10 +92,18 @@ namespace MassActivation.UnitTests
                 "}"
                 ));
             ApplicationActivator.UseEnvironment(EnvironmentName.Development).Startup();
+#if NetCore
+            Assert.Equal("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
+#else
             Assert.AreEqual("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void AttributeSpecifiedDefaultStartupClass()
         {
             Assert.True(CompileHelper.CreateAssembly("test.dll",
@@ -76,10 +115,18 @@ namespace MassActivation.UnitTests
                     "}\r\n" +
                 "}"));
             ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
+#else
             Assert.AreEqual("TestApplication", ApplicationActivator.Environment.ApplicationName);
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void AttributeSpecifiedEnvironmentStartupClass()
         {
             Assert.True(CompileHelper.CreateAssembly("test.dll",
@@ -99,10 +146,18 @@ namespace MassActivation.UnitTests
                 "}"
                 ));
             ApplicationActivator.UseEnvironment(EnvironmentName.Development).Startup();
+#if NetCore
+            Assert.Equal("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
+#else
             Assert.AreEqual("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void InvokeStaticConstructor()
         {
             Assert.True(CompileHelper.CreateAssembly("test.dll",
@@ -116,14 +171,26 @@ namespace MassActivation.UnitTests
                     "}\r\n" +
                 "}"));
             ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
+#else
             Assert.AreEqual("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void InvokeInstanceConstructor()
         {
             Environment.SetEnvironmentVariable("TestVariable", "Initialize");
+#if NetCore
+            Assert.Equal("Initialize", Environment.GetEnvironmentVariable("TestVariable"));
+#else
             Assert.AreEqual("Initialize", Environment.GetEnvironmentVariable("TestVariable"));
+#endif
             Assert.True(CompileHelper.CreateAssembly("test.dll",
              "using MassActivation;\r\n" +
              "public class Startup{\r\n" +
@@ -135,10 +202,18 @@ namespace MassActivation.UnitTests
                  "}\r\n" +
              "}"));
             ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
+#else
             Assert.AreEqual("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void InvokeInstanceConstructorWithParameters()
         {
             Assert.True(CompileHelper.CreateAssembly("test.dll",
@@ -149,10 +224,18 @@ namespace MassActivation.UnitTests
                  "}\r\n" +
              "}"));
             ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
+#else
             Assert.AreEqual("TestApplication", ApplicationActivator.Environment.ApplicationName);
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void InvokeStaticMethod()
         {
             Assert.True(CompileHelper.CreateAssembly("test.dll",
@@ -163,10 +246,18 @@ namespace MassActivation.UnitTests
                     "}\r\n" +
                 "}"));
             ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
+#else
             Assert.AreEqual("TestApplication", ApplicationActivator.Environment.ApplicationName);
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void InstanceConstructorDefaultInvokeSequence()
         {
             Assert.True(CompileHelper.CreateAssembly("test1.dll",
@@ -184,10 +275,18 @@ namespace MassActivation.UnitTests
                   "}\r\n" +
               "}"));
             ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("TestApplication1", ApplicationActivator.Environment.ApplicationName);
+#else
             Assert.AreEqual("TestApplication1", ApplicationActivator.Environment.ApplicationName);
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void InstanceMethodDefaultInvokeSequence()
         {
             Assert.True(CompileHelper.CreateAssembly("test1.dll",
@@ -205,10 +304,18 @@ namespace MassActivation.UnitTests
                   "}\r\n" +
               "}"));
             ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("TestApplication1", ApplicationActivator.Environment.ApplicationName);
+#else
             Assert.AreEqual("TestApplication1", ApplicationActivator.Environment.ApplicationName);
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void InstanceConstructorSpecifyPriority()
         {
             Assert.True(CompileHelper.CreateAssembly("test1.dll",
@@ -227,10 +334,18 @@ namespace MassActivation.UnitTests
                   "}\r\n" +
               "}"));
             ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("TestApplication2", ApplicationActivator.Environment.ApplicationName);
+#else
             Assert.AreEqual("TestApplication2", ApplicationActivator.Environment.ApplicationName);
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void InstanceMethodSpecifyPriority()
         {
             Assert.True(CompileHelper.CreateAssembly("test1.dll",
@@ -249,10 +364,18 @@ namespace MassActivation.UnitTests
                   "}\r\n" +
               "}"));
             ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("TestApplication2", ApplicationActivator.Environment.ApplicationName);
+#else
             Assert.AreEqual("TestApplication2", ApplicationActivator.Environment.ApplicationName);
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void StartupClassSpecifyPriority()
         {
             Assert.True(CompileHelper.CreateAssembly("test1.dll",
@@ -271,10 +394,18 @@ namespace MassActivation.UnitTests
                   "}\r\n" +
               "}"));
             ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("TestApplication2", ApplicationActivator.Environment.ApplicationName);
+#else
             Assert.AreEqual("TestApplication2", ApplicationActivator.Environment.ApplicationName);
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void StaticConstructorSpecifyPriority()
         {
             Assert.True(CompileHelper.CreateAssembly("test1.dll",
@@ -299,10 +430,18 @@ namespace MassActivation.UnitTests
                     "}\r\n" +
                 "}"));
             ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("TestApplication1", Environment.GetEnvironmentVariable("TestVariable"));
+#else
             Assert.AreEqual("TestApplication1", Environment.GetEnvironmentVariable("TestVariable"));
+#endif
         }
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void MixedPrioritySpecification()
         {
             Assert.True(CompileHelper.CreateAssembly("test1.dll",
@@ -335,9 +474,15 @@ namespace MassActivation.UnitTests
                     "}\r\n" +
                 "}"));
             ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("TestApplication1", Environment.GetEnvironmentVariable("TestVariable"));
+            Assert.Equal("TestApplication2", ApplicationActivator.Environment.ApplicationName);
+            Assert.Equal(new Version("1.0.1"), ApplicationActivator.Environment.ApplicationVersion);
+#else
             Assert.AreEqual("TestApplication1", Environment.GetEnvironmentVariable("TestVariable"));
             Assert.AreEqual("TestApplication2", ApplicationActivator.Environment.ApplicationName);
             Assert.AreEqual(new Version("1.0.1"), ApplicationActivator.Environment.ApplicationVersion);
+#endif
         }
     }
 }
