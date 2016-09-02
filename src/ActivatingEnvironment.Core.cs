@@ -9,6 +9,7 @@ namespace MassActivation
 {
     internal partial class ActivatingEnvironment
     {
+        private readonly HashSet<Assembly> _dynamicAssemblies = new HashSet<Assembly>();
         private void Initialize()
         {
             var application = PlatformServices.Default.Application;
@@ -22,7 +23,19 @@ namespace MassActivation
         /// <returns>All the assemblies to be used by the application.</returns>
         public IEnumerable<Assembly> GetAssemblies()
         {
-            return DependencyContext.Default.GetDefaultAssemblyNames().Select(Assembly.Load);
+            return DependencyContext.Default.GetDefaultAssemblyNames().Select(Assembly.Load).Union(_dynamicAssemblies);
+        }
+
+        /// <summary>
+        /// Specify the dynamically loaded assembly.
+        /// </summary>
+        /// <param name="assembly">The assembly has been dynamically loaded.</param>
+        public void UseAssembly(Assembly assembly)
+        {
+            if (assembly != null)
+            {
+                _dynamicAssemblies.Add(assembly);
+            }
         }
     }
 }

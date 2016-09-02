@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace MassActivation
 {
@@ -71,6 +72,15 @@ namespace MassActivation
         /// <typeparam name="T">The registered type of the component.</typeparam>
         /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
         IActivatorBuilder RemoveService<T>();
+
+#if NetCore
+        /// <summary>
+        /// Specify the dynamically loaded assembly.
+        /// </summary>
+        /// <param name="assembly">The assembly has been dynamically loaded.</param>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        IActivatorBuilder UseAssembly(Assembly assembly);
+#endif
 
         /// <summary>
         /// Startup the hosting application.

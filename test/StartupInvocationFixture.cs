@@ -36,6 +36,9 @@ namespace MassActivation.UnitTests
                         "environment.UseApplicationName(\"TestApplication\");\r\n" +
                     "}\r\n" +
                 "}"));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
             ApplicationActivator.Startup();
 #if NetCore
             Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
@@ -65,6 +68,9 @@ namespace MassActivation.UnitTests
                     "}\r\n" +
                 "}"
                 ));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
             ApplicationActivator.UseEnvironment(EnvironmentName.Development).Startup();
 #if NetCore
             Assert.Equal("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
@@ -91,6 +97,9 @@ namespace MassActivation.UnitTests
                     "}\r\n" +
                 "}"
                 ));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
             ApplicationActivator.UseEnvironment(EnvironmentName.Development).Startup();
 #if NetCore
             Assert.Equal("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
@@ -114,6 +123,9 @@ namespace MassActivation.UnitTests
                         "environment.UseApplicationName(\"TestApplication\");\r\n" +
                     "}\r\n" +
                 "}"));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
             ApplicationActivator.Startup();
 #if NetCore
             Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
@@ -145,6 +157,9 @@ namespace MassActivation.UnitTests
                     "}\r\n" +
                 "}"
                 ));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
             ApplicationActivator.UseEnvironment(EnvironmentName.Development).Startup();
 #if NetCore
             Assert.Equal("DevelopmentApplication", ApplicationActivator.Environment.ApplicationName);
@@ -170,6 +185,9 @@ namespace MassActivation.UnitTests
                         "environment.UseApplicationName(\"TestApplication\");\r\n" +
                     "}\r\n" +
                 "}"));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
             ApplicationActivator.Startup();
 #if NetCore
             Assert.Equal("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
@@ -201,6 +219,9 @@ namespace MassActivation.UnitTests
                      "environment.UseApplicationName(\"TestApplication\");\r\n" +
                  "}\r\n" +
              "}"));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
             ApplicationActivator.Startup();
 #if NetCore
             Assert.Equal("MassActivation", Environment.GetEnvironmentVariable("TestVariable"));
@@ -223,6 +244,9 @@ namespace MassActivation.UnitTests
                      "environment.UseApplicationName(\"TestApplication\");\r\n" +
                  "}\r\n" +
              "}"));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
             ApplicationActivator.Startup();
 #if NetCore
             Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
@@ -245,6 +269,9 @@ namespace MassActivation.UnitTests
                         "environment.UseApplicationName(\"TestApplication\");\r\n" +
                     "}\r\n" +
                 "}"));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
             ApplicationActivator.Startup();
 #if NetCore
             Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
@@ -274,6 +301,11 @@ namespace MassActivation.UnitTests
                       "environment.UseApplicationName(\"TestApplication2\");\r\n" +
                   "}\r\n" +
               "}"));
+#if NetCore
+            var assembly1 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test1"));
+            var assembly2 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test2"));
+            ApplicationActivator.UseAssembly(assembly1).UseAssembly(assembly2);
+#endif
             ApplicationActivator.Startup();
 #if NetCore
             Assert.Equal("TestApplication1", ApplicationActivator.Environment.ApplicationName);
@@ -303,6 +335,11 @@ namespace MassActivation.UnitTests
                       "environment.UseApplicationName(\"TestApplication2\");\r\n" +
                   "}\r\n" +
               "}"));
+#if NetCore
+            var assembly1 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test1"));
+            var assembly2 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test2"));
+            ApplicationActivator.UseAssembly(assembly1).UseAssembly(assembly2);
+#endif
             ApplicationActivator.Startup();
 #if NetCore
             Assert.Equal("TestApplication1", ApplicationActivator.Environment.ApplicationName);
@@ -333,6 +370,11 @@ namespace MassActivation.UnitTests
                       "environment.UseApplicationName(\"TestApplication2\");\r\n" +
                   "}\r\n" +
               "}"));
+#if NetCore
+            var assembly1 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test1"));
+            var assembly2 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test2"));
+            ApplicationActivator.UseAssembly(assembly1).UseAssembly(assembly2);
+#endif
             ApplicationActivator.Startup();
 #if NetCore
             Assert.Equal("TestApplication2", ApplicationActivator.Environment.ApplicationName);
@@ -363,6 +405,11 @@ namespace MassActivation.UnitTests
                       "environment.UseApplicationName(\"TestApplication2\");\r\n" +
                   "}\r\n" +
               "}"));
+#if NetCore
+            var assembly1 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test1"));
+            var assembly2 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test2"));
+            ApplicationActivator.UseAssembly(assembly1).UseAssembly(assembly2);
+#endif
             ApplicationActivator.Startup();
 #if NetCore
             Assert.Equal("TestApplication2", ApplicationActivator.Environment.ApplicationName);
@@ -393,6 +440,11 @@ namespace MassActivation.UnitTests
                       "environment.UseApplicationName(\"TestApplication2\");\r\n" +
                   "}\r\n" +
               "}"));
+#if NetCore
+            var assembly1 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test1"));
+            var assembly2 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test2"));
+            ApplicationActivator.UseAssembly(assembly1).UseAssembly(assembly2);
+#endif
             ApplicationActivator.Startup();
 #if NetCore
             Assert.Equal("TestApplication2", ApplicationActivator.Environment.ApplicationName);
@@ -429,6 +481,11 @@ namespace MassActivation.UnitTests
                         "environment.UseApplicationName(\"TestApplication\");\r\n" +
                     "}\r\n" +
                 "}"));
+#if NetCore
+            var assembly1 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test1"));
+            var assembly2 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test2"));
+            ApplicationActivator.UseAssembly(assembly1).UseAssembly(assembly2);
+#endif
             ApplicationActivator.Startup();
 #if NetCore
             Assert.Equal("TestApplication1", Environment.GetEnvironmentVariable("TestVariable"));
@@ -473,6 +530,11 @@ namespace MassActivation.UnitTests
                         "environment.UseApplicationVersion(new System.Version(\"1.0.5\"));\r\n" +
                     "}\r\n" +
                 "}"));
+#if NetCore
+            var assembly1 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test1"));
+            var assembly2 = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test2"));
+            ApplicationActivator.UseAssembly(assembly1).UseAssembly(assembly2);
+#endif
             ApplicationActivator.Startup();
 #if NetCore
             Assert.Equal("TestApplication1", Environment.GetEnvironmentVariable("TestVariable"));

@@ -20,7 +20,8 @@ namespace MassActivation.UnitTests
                     {
                         MetadataReference.CreateFromFile(Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "MassActivation.dll")),
                         MetadataReference.CreateFromFile(Path.Combine(path,@".nuget\packages\System.Runtime\4.1.0\ref\netstandard1.5\System.Runtime.dll")),
-                        MetadataReference.CreateFromFile(Path.Combine(path,@".nuget\packages\System.ComponentModel\4.0.1\ref\netstandard1.0\System.ComponentModel.dll"))
+                        MetadataReference.CreateFromFile(Path.Combine(path,@".nuget\packages\System.ComponentModel\4.0.1\ref\netstandard1.0\System.ComponentModel.dll")),
+                        MetadataReference.CreateFromFile(Path.Combine(path,@".nuget\packages\System.Runtime.Extensions\4.1.0\ref\netstandard1.5\System.Runtime.Extensions.dll")), 
                     })
                 .AddSyntaxTrees(sourceCodes.Concat(new[]
                 {
@@ -48,7 +49,6 @@ namespace MassActivation.UnitTests
                 {
                     assemblyStream.CopyTo(fileStream);
                 }
-                //System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromStream(assemblyStream);
                 return true;
             }
         }

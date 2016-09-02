@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 #if NetCore
 using System.Runtime.Loader;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -188,20 +189,26 @@ namespace MassActivation.UnitTests
             Assert.Null(environment.Get<IServiceProvider>());
         }
 
-#if !NetCore
 
+#if NetCore
+        [Fact]
+#else
         [Test]
+#endif
         public void RuntimeDynamicAssembly()
         {
+            var environment = new ActivatingEnvironment();
             var name = new AssemblyName("DynamicAssembly");
+#if NetCore
+            environment.UseAssembly(AssemblyBuilder.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run));
+#else
             AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run);
-            IActivatingEnvironment environment = new ActivatingEnvironment();
+#endif
             var assembly = environment.GetAssemblies().SingleOrDefault(x => x.GetName().Name == "DynamicAssembly");
             Assert.NotNull(assembly);
             Assert.True(assembly.IsDynamic);
         }
 
-#endif
 
 #if NetCore
         [Fact]
@@ -211,7 +218,10 @@ namespace MassActivation.UnitTests
         public void NotReferenceStaticAssembly()
         {
             Assert.True(CompileHelper.CreateAssembly("test.dll"));
-            IActivatingEnvironment environment = new ActivatingEnvironment();
+            var environment = new ActivatingEnvironment();
+#if NetCore
+            environment.UseAssembly(Assembly.Load(new AssemblyName("test")));
+#endif
             var assembly = environment.GetAssemblies().SingleOrDefault(x => x.GetName().Name == "test");
             Assert.NotNull(assembly);
         }
@@ -230,11 +240,11 @@ namespace MassActivation.UnitTests
 #endif
             var assemblyPath = Path.Combine(new DirectoryInfo(basePath).Parent?.FullName, "test.dll");
             Assert.True(CompileHelper.CreateAssembly("../test.dll"));
-            IActivatingEnvironment environment = new ActivatingEnvironment();
+            var environment = new ActivatingEnvironment();
             var assembly = environment.GetAssemblies().SingleOrDefault(x => x.GetName().Name == "test");
             Assert.Null(assembly);
 #if NetCore
-            AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
+            environment.UseAssembly(AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath));
 #else
             Assembly.LoadFile(assemblyPath);
 #endif

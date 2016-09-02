@@ -31,6 +31,11 @@ namespace MassActivation
             return new Pair<TFirst, TSecond>(x, y);
         }
 
+        private static ActivatingEnvironment EnsureEnvironment()
+        {
+            return _environment ?? (_environment = new ActivatingEnvironment());
+        }
+
         #region Fields
 
         private static string _environmentName;
@@ -373,11 +378,7 @@ namespace MassActivation
         /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
         public static IActivatorBuilder UseService(Type serviceType, object instance)
         {
-            if (_environment == null)
-            {
-                _environment = new ActivatingEnvironment();
-            }
-            _environment.Use(serviceType, instance);
+            EnsureEnvironment().Use(serviceType, instance);
             return new ActivatorBuilder();
         }
 
@@ -414,6 +415,19 @@ namespace MassActivation
             return new ActivatorBuilder();
         }
 
+#if NetCore
+        /// <summary>
+        /// Specify the dynamically loaded assembly.
+        /// </summary>
+        /// <param name="assembly">The assembly has been dynamically loaded.</param>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public static IActivatorBuilder UseAssembly(Assembly assembly)
+        {
+            EnsureEnvironment().UseAssembly(assembly);
+            return new ActivatorBuilder();
+        }
+#endif
+
         #endregion
 
         #region Startup
@@ -423,10 +437,7 @@ namespace MassActivation
         /// </summary>
         public static void Startup()
         {
-            if (_environment == null)
-            {
-                _environment = new ActivatingEnvironment();
-            }
+            EnsureEnvironment();
             lock (_environment)
             {
                 // Apply the configuration variables to environment.
