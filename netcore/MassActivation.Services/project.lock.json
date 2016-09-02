@@ -1,5 +1,4 @@
 {
-  "locked": false,
   "version": 2,
   "targets": {
     ".NETStandard,Version=v1.6": {
@@ -4552,5 +4551,8 @@
     ".NETStandard,Version=v1.6": []
   },
   "tools": {},
-  "projectFileToolGroups": {}
+  "projectFileToolGroups": {},
+  "packageFolders": {
+    "D:\\github\\MassActivation\\packages": {}
+  }
 }

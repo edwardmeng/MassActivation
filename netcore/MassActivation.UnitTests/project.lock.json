@@ -1,5 +1,4 @@
 {
-  "locked": false,
   "version": 2,
   "targets": {
     ".NETCoreApp,Version=v1.0": {
@@ -7543,5 +7542,8 @@
     ".NETCoreApp,Version=v1.0": []
   },
   "tools": {},
-  "projectFileToolGroups": {}
+  "projectFileToolGroups": {},
+  "packageFolders": {
+    "D:\\github\\MassActivation\\packages": {}
+  }
 }

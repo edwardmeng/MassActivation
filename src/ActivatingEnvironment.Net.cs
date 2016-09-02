@@ -56,7 +56,7 @@ namespace MassActivation
 
         /// <summary>
         /// Return the entry assembly for difference hosting environments.
-        /// 1. Windows Application & WPF Application
+        /// 1. Windows Application &amp; WPF Application
         /// 2. ASP.NET Application
         /// 3. Unit Test Application
         /// 4. Console Application
