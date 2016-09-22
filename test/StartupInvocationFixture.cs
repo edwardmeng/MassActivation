@@ -423,6 +423,37 @@ namespace MassActivation.UnitTests
 #else
         [Test]
 #endif
+        public void MultipleInstanceMethod()
+        {
+            Assert.True(CompileHelper.CreateAssembly("test.dll",
+                "using MassActivation;\r\n" +
+                "using System;\r\n" +
+                "public class Startup{\r\n" +
+                    "public void Configuration(IActivatingEnvironment environment){\r\n" +
+                        "environment.UseApplicationName(\"TestApplication\");\r\n" +
+                    "}\r\n" +
+                    "public void Configuration(IServiceProvider serviceProvider){\r\n" +
+                        "((IActivatingEnvironment)serviceProvider.GetService(typeof(IActivatingEnvironment))).UseApplicationVersion(new Version(\"1.2.0\"));\r\n" +
+                    "}\r\n" +
+                "}"));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
+            ApplicationActivator.Startup();
+#if NetCore
+            Assert.Equal("TestApplication", ApplicationActivator.Environment.ApplicationName);
+            Assert.Equal(new Version("1.2.0"), ApplicationActivator.Environment.ApplicationVersion);
+#else
+            Assert.AreEqual("TestApplication", ApplicationActivator.Environment.ApplicationName);
+            Assert.AreEqual(new Version("1.2.0"), ApplicationActivator.Environment.ApplicationVersion);
+#endif
+        }
+
+#if NetCore
+        [Fact]
+#else
+        [Test]
+#endif
         public void StartupClassSpecifyPriority()
         {
             Assert.True(CompileHelper.CreateAssembly("test1.dll",

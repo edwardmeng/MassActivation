@@ -94,10 +94,10 @@
     <Compile Include="..\..\src\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\..\src\Properties\Strings.Designer.cs">
+    <Compile Include="..\..\src\Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <Link>Properties\Strings.Designer.cs</Link>
+      <Link>Strings.Designer.cs</Link>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <Compile Include="..\..\src\TypeNameHelper.cs">
@@ -105,8 +105,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\..\src\Properties\Strings.resx">
-      <Link>Properties\Strings.resx</Link>
+    <EmbeddedResource Include="..\..\src\Strings.resx">
+      <Link>Strings.resx</Link>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

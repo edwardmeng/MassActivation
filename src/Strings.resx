@@ -135,9 +135,6 @@
   <data name="Cannot_Multiple_PublicConstructor" xml:space="preserve">
     <value>There are multiple public constructors for the activator type {0}. The hosting application cannot determine which one should be used to instantiate.</value>
   </data>
-  <data name="Cannot_Multiple_StartupMethod" xml:space="preserve">
-    <value>There are multiple public activation method {0} have been found in the type {1}. The hosting application cannot determine which one should be used to invoke.</value>
-  </data>
   <data name="Cannot_Startup_GenericType" xml:space="preserve">
     <value>The activator type {0} for the assembly {1} cannot be generic type.</value>
   </data>

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using MassActivation.Properties;
 
 namespace MassActivation
 {
@@ -124,7 +123,7 @@ namespace MassActivation
 
         #region Invocation
 
-        private static ActivationMetadata LookupMethod(ActivationMetadata type, string methodName, string environment)
+        private static IEnumerable<ActivationMetadata> LookupMethod(ActivationMetadata type, string methodName, string environment)
         {
             var genericMethodsWithEnv = new List<MethodInfo>();
             var nomalMethodsWithEnv = new List<MethodInfo>();
@@ -167,21 +166,13 @@ namespace MassActivation
                 }
             }
             var typeName = TypeNameHelper.GetTypeDisplayName(type.GetTargetType());
-            if (nomalMethodsWithEnv.Count > 1)
+            if (nomalMethodsWithEnv.Count > 0)
             {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithEnv, typeName));
+                return nomalMethodsWithEnv.Select(method => new ActivationMetadata(method, type.Priority));
             }
-            if (nomalMethodsWithEnv.Count == 1)
+            if (nomalMethodsWithoutEnv.Count > 0)
             {
-                return new ActivationMetadata(nomalMethodsWithEnv[0], type.Priority);
-            }
-            if (nomalMethodsWithoutEnv.Count > 1)
-            {
-                throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_StartupMethod, methodNameWithoutEnv, typeName));
-            }
-            if (nomalMethodsWithoutEnv.Count == 1)
-            {
-                return new ActivationMetadata(nomalMethodsWithoutEnv[0], type.Priority);
+                return nomalMethodsWithoutEnv.Select(method => new ActivationMetadata(method, type.Priority));
             }
             if (genericMethodsWithEnv.Count > 0)
             {
@@ -191,7 +182,7 @@ namespace MassActivation
             {
                 throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_GenericMethod, methodNameWithoutEnv, typeName));
             }
-            return null;
+            return Enumerable.Empty<ActivationMetadata>();
         }
 
         private static ActivationMetadata ValidateMethod(ActivationMetadata metadata)
@@ -221,19 +212,17 @@ namespace MassActivation
         {
             if (_environment == null || types == null) return;
             var methods = from instance in types
-                          let method = ValidateMethod(LookupMethod(instance, methodName, _environment.Environment))
-                          where method != null
-                          orderby method.Priority, ((MethodBase)method.TargetMember).GetParameters().Length
+                          from method in LookupMethod(instance, methodName, _environment.Environment)
                           select CreatePair(instance, method);
+            List<Pair<ActivationMetadata, ActivationMetadata>> methodList;
             if (startup)
             {
-                methods = methods.OrderBy(x => x.Second.Priority).ThenBy(x => ((MethodBase)x.Second.TargetMember).GetParameters().Length);
+                methodList = methods.OrderBy(x=>x.Second.Priority).ThenBy(x => ((MethodBase)x.Second.TargetMember).GetParameters().Length).ToList();
             }
             else
             {
-                methods = methods.OrderBy(x => x.Second.Priority).ThenByDescending(x => ((MethodBase)x.Second.TargetMember).GetParameters().Length);
+                methodList = methods.OrderBy(x => x.Second.Priority).ThenByDescending(x => ((MethodBase)x.Second.TargetMember).GetParameters().Length).ToList();
             }
-            var methodList = methods.ToList();
             var invokeMethodCount = -1;
             while (invokeMethodCount != 0 && methodList.Count > 0)
             {

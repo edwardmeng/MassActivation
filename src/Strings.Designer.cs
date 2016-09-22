@@ -10,7 +10,7 @@
 
 using System.Reflection;
 
-namespace MassActivation.Properties {
+namespace MassActivation {
     using System;
     
     
@@ -48,7 +48,7 @@ namespace MassActivation.Properties {
 #else
                     assembly = typeof (Strings).Assembly;
 #endif
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MassActivation.Properties.Strings", assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MassActivation.Strings", assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -111,15 +111,6 @@ namespace MassActivation.Properties {
         internal static string Cannot_Multiple_PublicConstructor {
             get {
                 return ResourceManager.GetString("Cannot_Multiple_PublicConstructor", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 There are multiple public activation method {0} have been found in the type {1}. The hosting application cannot determine which one should be used to invoke. 的本地化字符串。
-        /// </summary>
-        internal static string Cannot_Multiple_StartupMethod {
-            get {
-                return ResourceManager.GetString("Cannot_Multiple_StartupMethod", resourceCulture);
             }
         }
         

@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Web;
 using System.Web.Compilation;
-using MassActivation.Properties;
 
 namespace MassActivation
 {
