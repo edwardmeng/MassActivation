@@ -9,6 +9,15 @@ Instead of assembly the startup or shutdown codes into the `Global.asax` or `Sta
 Installing via NuGet!
 ---------------------
         Install-Package MassActivation
+		
+Supported platform:
+------------------
+Microsoft .NET Framework 3.5
+
+Microsoft .NET Framework 4.0+
+
+NetStandard 1.6
+
 Usage
 ------
 #####Step 1. Add startup class to your package.(**Required**)
