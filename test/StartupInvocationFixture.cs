@@ -454,6 +454,30 @@ namespace MassActivation.UnitTests
 #else
         [Test]
 #endif
+        public void MultipleConstructors()
+        {
+            Assert.True(CompileHelper.CreateAssembly("test.dll",
+                "using MassActivation;\r\n" +
+                "using System;\r\n" +
+                "public class Startup{\r\n" +
+                    "public Startup(IActivatingEnvironment environment){\r\n" +
+                        "environment.UseApplicationName(\"TestApplication\");\r\n" +
+                    "}\r\n" +
+                    "public Startup(IServiceProvider serviceProvider){\r\n" +
+                        "((IActivatingEnvironment)serviceProvider.GetService(typeof(IActivatingEnvironment))).UseApplicationVersion(new Version(\"1.2.0\"));\r\n" +
+                    "}\r\n" +
+                "}"));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
+            Assert.Throws<ActivationException>(() => ApplicationActivator.Startup());
+        }
+
+#if NetCore
+        [Fact]
+#else
+        [Test]
+#endif
         public void StartupClassSpecifyPriority()
         {
             Assert.True(CompileHelper.CreateAssembly("test1.dll",
@@ -576,6 +600,85 @@ namespace MassActivation.UnitTests
             Assert.AreEqual("TestApplication2", ApplicationActivator.Environment.ApplicationName);
             Assert.AreEqual(new Version("1.0.1"), ApplicationActivator.Environment.ApplicationVersion);
 #endif
+        }
+
+#if NetCore
+        [Fact]
+#else
+        [Test]
+#endif
+        public void GenericConfigurationMethod()
+        {
+            Assert.True(CompileHelper.CreateAssembly("test.dll",
+             "using MassActivation;\r\n" +
+             "public class Startup{\r\n" +
+                 "public void Configuration<T>(IActivatingEnvironment environment){\r\n" +
+                     "environment.UseApplicationName(\"TestApplication\");\r\n" +
+                 "}\r\n" +
+             "}"));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
+            Assert.Throws<ActivationException>(() => ApplicationActivator.Startup());
+        }
+
+#if NetCore
+        [Fact]
+#else
+        [Test]
+#endif
+        public void ConfigurationMethodWithOutParameter()
+        {
+            Assert.True(CompileHelper.CreateAssembly("test.dll",
+             "using MassActivation;\r\n" +
+             "public class Startup{\r\n" +
+                 "public void Configuration(out IActivatingEnvironment environment){\r\n" +
+                     "environment = null;\r\n" +
+                 "}\r\n" +
+             "}"));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
+            Assert.Throws<ActivationException>(() => ApplicationActivator.Startup());
+        }
+
+#if NetCore
+        [Fact]
+#else
+        [Test]
+#endif
+        public void ConfigurationMethodWithReferenceParameter()
+        {
+            Assert.True(CompileHelper.CreateAssembly("test.dll",
+             "using MassActivation;\r\n" +
+             "public class Startup{\r\n" +
+                 "public void Configuration(ref IActivatingEnvironment environment){\r\n" +
+                     "environment.UseApplicationName(\"TestApplication\");\r\n" +
+                 "}\r\n" +
+             "}"));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
+            Assert.Throws<ActivationException>(() => ApplicationActivator.Startup());
+        }
+
+#if NetCore
+        [Fact]
+#else
+        [Test]
+#endif
+        public void UnkownMethodParameter()
+        {
+            Assert.True(CompileHelper.CreateAssembly("test.dll",
+             "using MassActivation;\r\n" +
+             "public class Startup{\r\n" +
+                 "public void Configuration(System.IFormatProvider environment){\r\n" +
+                 "}\r\n" +
+             "}"));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
+            Assert.Throws<ActivationException>(() => ApplicationActivator.Startup());
         }
     }
 }
