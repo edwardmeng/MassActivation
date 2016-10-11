@@ -225,3 +225,8 @@ Others
 1. The dll and exe files in the bin folder for web application or root folder for executable applications
 2. The assemblies loaded through `Assembly.Load`, `Assembly.LoadFrom` or `Assembly.LoadFile` method.
 3. The assemblies have been dynamically generated through `System.Emit`.
+
+License
+------
+MassActivation is Open Source software and it is released under the MIT license.
+The licenses allow the use of MassActivation in free and commercial applications and libraries without restrictions.
