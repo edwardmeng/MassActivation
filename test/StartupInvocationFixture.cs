@@ -478,6 +478,41 @@ namespace MassActivation.UnitTests
 #else
         [Test]
 #endif
+        public void MultipleStepMethods()
+        {
+            Assert.True(CompileHelper.CreateAssembly("test.dll",
+                "using MassActivation;\r\n" +
+                "using System;\r\n" +
+                "public class Startup{\r\n" +
+                    "public void Initialize(IActivatingEnvironment environment){\r\n" +
+                        "environment.UseApplicationName(\"Initialized\");\r\n" +
+                    "}\r\n" +
+                    "public void Configuration(IActivatingEnvironment environment){\r\n" +
+                        "environment.UseApplicationName(\"Configuration\");\r\n" +
+                    "}\r\n" +
+                "}"));
+#if NetCore
+            ApplicationActivator.UseAssembly(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("test")));
+#endif
+            ApplicationActivator.Startup("Initialize");
+#if NetCore
+            Assert.Equal("Initialized", ApplicationActivator.Environment.ApplicationName);
+#else
+            Assert.AreEqual("Initialized", ApplicationActivator.Environment.ApplicationName);
+#endif
+            ApplicationActivator.Startup("Configuration");
+#if NetCore
+            Assert.Equal("Configuration", ApplicationActivator.Environment.ApplicationName);
+#else
+            Assert.AreEqual("Configuration", ApplicationActivator.Environment.ApplicationName);
+#endif
+        }
+
+#if NetCore
+        [Fact]
+#else
+        [Test]
+#endif
         public void StartupClassSpecifyPriority()
         {
             Assert.True(CompileHelper.CreateAssembly("test1.dll",

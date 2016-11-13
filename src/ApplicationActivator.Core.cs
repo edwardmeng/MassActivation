@@ -52,15 +52,15 @@ namespace MassActivation
                    resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv));
         }
 
-        private static ActivationMetadata LookupClassConstructor(ActivationMetadata type)
+        private static ActivationMetadata LookupClassConstructor(ActivationType type)
         {
-            var constructor = ((TypeInfo)type.TargetMember).DeclaredConstructors.SingleOrDefault(ctor => ctor.IsStatic);
-            return constructor == null ? null : new ActivationMetadata(constructor, type.Priority);
+            var constructor = ((TypeInfo)type.Metadata.TargetMember).DeclaredConstructors.SingleOrDefault(ctor => ctor.IsStatic);
+            return constructor == null ? null : new ActivationMetadata(constructor, type.Metadata.Priority);
         }
 
-        private static ActivationMetadata LookupInstanceConstructor(ActivationMetadata type)
+        private static ActivationMetadata LookupInstanceConstructor(ActivationType type)
         {
-            var targetType = (TypeInfo)type.TargetMember;
+            var targetType = (TypeInfo)type.Metadata.TargetMember;
             if (targetType.IsAbstract && targetType.IsSealed) return null;
             var constructors = targetType.DeclaredConstructors.Where(ctor => !ctor.IsStatic && ctor.IsPublic).ToArray();
             if (constructors.Length == 0)
@@ -71,20 +71,20 @@ namespace MassActivation
             {
                 throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Multiple_PublicConstructor, TypeNameHelper.GetTypeDisplayName(targetType.AsType())));
             }
-            return new ActivationMetadata(constructors[0], type.Priority);
+            return new ActivationMetadata(constructors[0], type.Metadata.Priority);
         }
 
         /// <summary>
         /// Invoke static constructors according to their priority.
         /// </summary>
-        private static void InvokeClassConstructors(IEnumerable<ActivationMetadata> types)
+        private static void InvokeClassConstructors(IEnumerable<ActivationType> types)
         {
             if (_environment == null || types == null) return;
             var staticConstructors = from type in types
                                      let constructor = LookupClassConstructor(type)
                                      where constructor != null
                                      orderby constructor.Priority
-                                     select type;
+                                     select type.Metadata;
             foreach (var constructor in staticConstructors)
             {
                 RuntimeHelpers.RunClassConstructor(((TypeInfo)constructor.TargetMember).AsType().TypeHandle);

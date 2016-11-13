@@ -35,43 +35,63 @@ namespace MassActivation
             return _environment ?? (_environment = new ActivatingEnvironment());
         }
 
+        private static void EnlistActivators(IEnumerable<ActivationType> types)
+        {
+            if (_activators == null)
+            {
+                _activators = types.ToList();
+            }
+            else
+            {
+                foreach (var type in types)
+                {
+                    if (_activators.All(activator => activator.Metadata.GetTargetType() != type.Metadata.GetTargetType()))
+                    {
+                        _activators.Add(type);
+                    }
+                }
+            }
+        }
+
         #region Fields
 
         private static string _environmentName;
         private static string _applicationName;
         private static Version _applicationVersion;
-        private static string[] _startupMethodNames = { "Initialize", "Configuration", "Load" };
+        private static string[] _defaultStartupMethodNames = { "Initialize", "Configuration", "Load" };
         private static string[] _shutdownMethodNames = { "Unload", "Shutdown" };
         private static ActivatingEnvironment _environment;
-        private static List<ActivationMetadata> _activators;
+        private static List<ActivationType> _activators;
+        private static string[] _startupMethodNames;
+        private static bool _initialized;
 
         #endregion
 
         #region Instantiate
 
-        private static IEnumerable<ActivationMetadata> SearchActivatorTypes(IEnumerable<Assembly> assemblies)
+        private static IEnumerable<ActivationType> SearchActivatorTypes(IEnumerable<Assembly> assemblies)
         {
             if (_environment == null)
             {
-                return Enumerable.Empty<ActivationMetadata>();
+                return Enumerable.Empty<ActivationType>();
             }
             return from assembly in assemblies
                    let metadata = SearchActivator(assembly)
                    where metadata != null
-                   select metadata;
+                   select new ActivationType(metadata);
         }
 
         /// <summary>
         /// Invoke instance constructors according to their priority, parameter number and parameter types.
         /// </summary>
-        private static void CreateInstances(IEnumerable<ActivationMetadata> types)
+        private static void CreateInstances(IEnumerable<ActivationType> types)
         {
             if (_environment == null || types == null) return;
             var constructors = (from type in types
                                 let constructor = ValidateMethod(LookupInstanceConstructor(type))
                                 where constructor != null
                                 orderby constructor.Priority, ((MethodBase)constructor.TargetMember).GetParameters().Length
-                                select CreatePair(type, constructor)).ToList();
+                                select CreatePair(type.Metadata, constructor)).ToList();
 
             var instanceCount = -1;
             while (instanceCount != 0 && constructors.Count > 0)
@@ -208,16 +228,16 @@ namespace MassActivation
             return metadata;
         }
 
-        private static void InvokeMethods(IEnumerable<ActivationMetadata> types, string methodName, bool startup)
+        private static void InvokeMethods(IEnumerable<ActivationType> types, string methodName, bool startup)
         {
             if (_environment == null || types == null) return;
-            var methods = from instance in types
-                          from method in LookupMethod(instance, methodName, _environment.Environment)
-                          select CreatePair(instance, method);
-            List<Pair<ActivationMetadata, ActivationMetadata>> methodList;
+            var methods = from type in types
+                          from method in LookupMethod(type.Metadata, methodName, _environment.Environment)
+                          select CreatePair(type, method);
+            List<Pair<ActivationType, ActivationMetadata>> methodList;
             if (startup)
             {
-                methodList = methods.OrderBy(x=>x.Second.Priority).ThenBy(x => ((MethodBase)x.Second.TargetMember).GetParameters().Length).ToList();
+                methodList = methods.OrderBy(x => x.Second.Priority).ThenBy(x => ((MethodBase)x.Second.TargetMember).GetParameters().Length).ToList();
             }
             else
             {
@@ -229,7 +249,7 @@ namespace MassActivation
                 invokeMethodCount = 0;
                 for (int i = 0; i < methodList.Count; i++)
                 {
-                    if (TryInvokeMethod((MethodInfo)methodList[i].Second.TargetMember, methodList[i].First.TargetInstance))
+                    if (TryInvokeMethod((MethodInfo)methodList[i].Second.TargetMember, methodList[i].First.Metadata.TargetInstance))
                     {
                         methodList.RemoveAt(i);
                         invokeMethodCount++;
@@ -242,13 +262,13 @@ namespace MassActivation
                 if (methodList.Count == 1)
                 {
                     throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_InvokeMethod, methodList[0].Second.TargetMember.Name,
-                        TypeNameHelper.GetTypeDisplayName(methodList[0].First.GetTargetType())));
+                        TypeNameHelper.GetTypeDisplayName(methodList[0].First.Metadata.GetTargetType())));
                 }
                 else
                 {
                     throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Invoke_MultipleMethod,
                         string.Join(", ",
-                            methodList.Select(method => TypeNameHelper.GetTypeDisplayName(method.First.GetTargetType()) + "." + TypeNameHelper.GetMethodDisplayName((MethodInfo)method.Second.TargetMember)).ToArray())));
+                            methodList.Select(method => TypeNameHelper.GetTypeDisplayName(method.First.Metadata.GetTargetType()) + "." + TypeNameHelper.GetMethodDisplayName((MethodInfo)method.Second.TargetMember)).ToArray())));
                 }
             }
         }
@@ -271,6 +291,31 @@ namespace MassActivation
             }
             method.Invoke(method.IsStatic ? null : instance, arguments.ToArray());
             return true;
+        }
+
+        private static void InvokeStartupMethods(ActivationType[] types)
+        {
+            Pair<string, ActivationType[]>[] methodGroups;
+            while ((methodGroups = (from type in types
+                       let methodName = type.PeekMethod()
+                       where !string.IsNullOrEmpty(methodName)
+                       group type by methodName
+                       into g
+                       select CreatePair(g.Key, g.ToArray())).ToArray()).Length > 0)
+            {
+                foreach (var methodGroup in methodGroups.OrderBy(group =>
+                {
+                    var index = Array.IndexOf(_startupMethodNames, group.First);
+                    return index == -1 ? int.MaxValue : index;
+                }))
+                {
+                    InvokeMethods(methodGroup.Second, methodGroup.First, true);
+                    foreach (var type in methodGroup.Second)
+                    {
+                        type.CommitMethod(methodGroup.First);
+                    }
+                }
+            }
         }
 
         #endregion
@@ -340,7 +385,7 @@ namespace MassActivation
         {
             lock (typeof(ApplicationActivator))
             {
-                _startupMethodNames = methodNames;
+                _defaultStartupMethodNames = methodNames;
             }
             return new ActivatorBuilder();
         }
@@ -426,25 +471,62 @@ namespace MassActivation
         /// </summary>
         public static void Startup()
         {
+            Startup((IEnumerable<string>)null);
+        }
+
+        /// <summary>
+        /// Startup the hosting application.
+        /// </summary>
+        public static void Startup(params string[] methodNames)
+        {
+            Startup((IEnumerable<string>) methodNames);
+        }
+
+        /// <summary>
+        /// Startup the hosting application.
+        /// </summary>
+        public static void Startup(IEnumerable<string> methodNames)
+        {
             EnsureEnvironment();
             lock (_environment)
             {
-                // Apply the configuration variables to environment.
-                if (!string.IsNullOrEmpty(_environmentName))
+                if (!_initialized)
                 {
-                    _environment.Environment = _environmentName;
+                    // Apply the configuration variables to environment.
+                    if (!string.IsNullOrEmpty(_environmentName))
+                    {
+                        _environment.Environment = _environmentName;
+                    }
+                    if (!string.IsNullOrEmpty(_applicationName))
+                    {
+                        _environment.ApplicationName = _applicationName;
+                    }
+                    if (_applicationVersion != null)
+                    {
+                        _environment.ApplicationVersion = _applicationVersion;
+                    }
+                    EnlistActivators(SearchActivatorTypes(_environment.GetAssemblies()));
+                    AttachEventListeners();
+                    _initialized = true;
                 }
-                if (!string.IsNullOrEmpty(_applicationName))
+                var types = _activators.ToArray();
+                if (_startupMethodNames == null)
                 {
-                    _environment.ApplicationName = _applicationName;
+                    InvokeClassConstructors(types);
+                    CreateInstances(types);
+                    _startupMethodNames = new string[0];
                 }
-                if (_applicationVersion != null)
+                var methodNameArray = (methodNames ?? new string[0]).ToArray();
+                if (methodNameArray.Length == 0)
                 {
-                    _environment.ApplicationVersion = _applicationVersion;
+                    methodNameArray = _defaultStartupMethodNames;
                 }
-                _activators = SearchActivatorTypes(_environment.GetAssemblies()).ToList();
-                Startup(_activators.ToArray());
-                AttachEventListeners();
+                _startupMethodNames = _startupMethodNames.Union(methodNameArray).ToArray();
+                foreach (var type in _activators)
+                {
+                    type.EnqueueMethods(_startupMethodNames);
+                }
+                InvokeStartupMethods(_activators.ToArray());
             }
         }
 
@@ -469,19 +551,26 @@ namespace MassActivation
         /// </remarks>
         public static void Startup(IEnumerable<Assembly> assemblies)
         {
-            if (_environment == null) return;
+#if NetCore
+            var assemblyArray = assemblies.ToArray();
+            foreach (var assembly in assemblyArray)
+            {
+                UseAssembly(assembly);
+            }
+            if (!_initialized) return;
+#else
+            if (!_initialized) return;
+            var assemblyArray = assemblies.ToArray();
+#endif
             lock (_environment)
             {
-                var activators = SearchActivatorTypes(assemblies).ToArray();
-                if (_activators == null)
+                var types = SearchActivatorTypes(assemblyArray).ToArray();
+                EnlistActivators(types);
+                foreach (var type in types)
                 {
-                    _activators = activators.ToList();
+                    type.EnqueueMethods(_startupMethodNames);
                 }
-                else
-                {
-                    _activators.AddRange(activators);
-                }
-                Startup(activators);
+                InvokeStartupMethods(types);
             }
         }
 
@@ -504,19 +593,6 @@ namespace MassActivation
             foreach (var methodName in methods)
             {
                 InvokeMethods(_activators, methodName, true);
-            }
-        }
-
-        /// <summary>
-        /// Process startup steps: static constructor, instance constructors, startup methods.
-        /// </summary>
-        private static void Startup(ActivationMetadata[] types)
-        {
-            InvokeClassConstructors(types);
-            CreateInstances(types);
-            foreach (var methodName in _startupMethodNames)
-            {
-                InvokeMethods(types, methodName, true);
             }
         }
 
@@ -565,16 +641,16 @@ namespace MassActivation
             if (_environment == null || _activators == null) return;
             lock (_environment)
             {
-                Shutdown((from metadata in _activators
-                          join assembly in assemblies on metadata.GetTargetAssembly() equals assembly
-                          select metadata).ToArray());
+                Shutdown((from type in _activators
+                          join assembly in assemblies on type.Metadata.GetTargetAssembly() equals assembly
+                          select type).ToArray());
             }
         }
 
         /// <summary>
         /// Process the shutdown steps.
         /// </summary>
-        private static void Shutdown(ActivationMetadata[] types)
+        private static void Shutdown(ActivationType[] types)
         {
             if (types == null) return;
             foreach (var methodName in _shutdownMethodNames)
@@ -588,12 +664,12 @@ namespace MassActivation
             }
         }
 
-        private static void DisposeInstances(IEnumerable<ActivationMetadata> types)
+        private static void DisposeInstances(IEnumerable<ActivationType> types)
         {
             if (types == null) return;
             foreach (var instance in types)
             {
-                (instance.TargetInstance as IDisposable)?.Dispose();
+                (instance.Metadata.TargetInstance as IDisposable)?.Dispose();
             }
         }
 

@@ -70,6 +70,9 @@
     <Compile Include="..\..\src\ActivationPriorityAttribute.cs">
       <Link>ActivationPriorityAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\..\src\ActivationType.cs">
+      <Link>ActivationType.cs</Link>
+    </Compile>
     <Compile Include="..\..\src\ActivatorBuilder.cs">
       <Link>ActivatorBuilder.cs</Link>
     </Compile>
