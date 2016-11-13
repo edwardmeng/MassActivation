@@ -7,7 +7,7 @@ set version=
 if not "%PackageVersion%" == "" (
    set version=-Version %PackageVersion%
 ) else (
-   set version=-Version 1.2.0
+   set version=-Version 1.3.0
 )
 REM Determine msbuild path
 set msbuildtmp="%ProgramFiles%\MSBuild\14.0\bin\msbuild"
@@ -19,7 +19,7 @@ set VisualStudioVersion=14.0
 REM Package restore
 echo.
 echo Running package restore...
-call :ExecuteCmd nuget.exe restore ..\MassActivation.sln -OutputDirectory ..\packages -NonInteractive -ConfigFile nuget.config
+call :ExecuteCmd nuget.exe restore ..\MassActivation.sln -NonInteractive -ConfigFile nuget.config
 IF %ERRORLEVEL% NEQ 0 goto error
 
 echo Building solution...

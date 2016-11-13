@@ -477,6 +477,7 @@ namespace MassActivation
         /// <summary>
         /// Startup the hosting application.
         /// </summary>
+        /// <param name="methodNames">The method name to be invoked for startup purpose.</param>
         public static void Startup(params string[] methodNames)
         {
             Startup((IEnumerable<string>) methodNames);
@@ -485,6 +486,7 @@ namespace MassActivation
         /// <summary>
         /// Startup the hosting application.
         /// </summary>
+        /// <param name="methodNames">The method name to be invoked for startup purpose.</param>
         public static void Startup(IEnumerable<string> methodNames)
         {
             EnsureEnvironment();
@@ -551,6 +553,10 @@ namespace MassActivation
         /// </remarks>
         public static void Startup(IEnumerable<Assembly> assemblies)
         {
+            if (assemblies == null)
+            {
+                throw new ArgumentNullException(nameof(assemblies));
+            }
 #if NetCore
             var assemblyArray = assemblies.ToArray();
             foreach (var assembly in assemblyArray)
