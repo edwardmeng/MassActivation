@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.PlatformAbstractions;
+using System.Runtime.Loader;
 
 namespace MassActivation
 {
@@ -23,7 +25,27 @@ namespace MassActivation
         /// <returns>All the assemblies to be used by the application.</returns>
         public IEnumerable<Assembly> GetAssemblies()
         {
-            return DependencyContext.Default.GetDefaultAssemblyNames().Select(Assembly.Load).Union(_dynamicAssemblies);
+            var context = DependencyContext.Default;
+            var loadedAssemblies = context.GetDefaultAssemblyNames().Select(Assembly.Load)
+                .Union(_dynamicAssemblies).Where(assembly => assembly != null)
+                .ToDictionary(assembly => assembly.FullName);
+            foreach (var file in Directory.GetFiles(AppContext.BaseDirectory, "*.dll", SearchOption.TopDirectoryOnly))
+            {
+                Assembly assembly;
+                try
+                {
+                    assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(file);
+                }
+                catch
+                {
+                    continue;
+                }
+                if (!loadedAssemblies.ContainsKey(assembly.FullName))
+                {
+                    context = context.Merge(DependencyContext.Load(assembly));
+                }
+            }
+            return context.GetDefaultAssemblyNames().Select(Assembly.Load).Union(_dynamicAssemblies);
         }
 
         /// <summary>

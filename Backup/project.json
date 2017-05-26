@@ -1,0 +1,35 @@
+{
+  "title": "MassActivation.UnitTests",
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "MassActivation": { "target": "project" },
+    "Microsoft.NETCore.App": {
+      "version": "1.0.0-*",
+      "type": "platform"
+    },
+    "System.Reflection.Emit": "4.0.1",
+    "xunit": "2.2.0-beta2-build3300",
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
+    "xunit.runner.console": "2.2.0-beta2-build3300" 
+  },
+
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": "dotnet5.6",
+      "buildOptions": {
+        "compile": {
+          "include": [ "../../GlobalAssemblyInfo.cs", "../../test/*.cs" ],
+          "exclude": [ "../../test/CompileHelper.Net.cs" ]
+        },
+        "copyToOutput": {
+          "include": [ "xunit.runner.json" ]
+        },
+        "define": [ "NetCore" ],
+        "keyFile": "../../MassActivation.snk",
+        "xmlDoc": false
+      }
+    }
+  },
+  "testRunner": "xunit"
+}

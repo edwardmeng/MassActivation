@@ -1,0 +1,745 @@
+From a012f77d2bac2ba322d8cda4d7c35ed43d361b12 Mon Sep 17 00:00:00 2001
+From: "Andy.Zhang" <andy.zhang@gaiaworks.cn>
+Date: Fri, 26 May 2017 17:44:43 +0800
+Subject: [PATCH] Add API to exclude startup types.
+
+---
+ GlobalAssemblyInfo.cs                              |  4 +-
+ MassActivation.sln                                 | 19 +++--
+ global.json                                        |  3 -
+ .../MassActivation.Services.csproj                 | 35 ++++++++
+ .../MassActivation.UnitTests.csproj                | 48 +++++++++++
+ .../MassActivation/MassActivation.netcore.csproj   | 72 +++++++++++++++++
+ .../MassActivation/MassActivation.netcore.xproj    | 92 ----------------------
+ netcore/MassActivation/project.json                | 31 --------
+ nuget/MassActivation.nuspec                        |  2 +-
+ nuget/build.cmd                                    | 20 ++---
+ .../MassActivation.NetCore.Web.csproj              | 44 +++++++++++
+ src/ActivatorBuilder.cs                            | 20 +++++
+ src/ApplicationActivator.Core.cs                   | 30 ++++++-
+ src/ApplicationActivator.Net.cs                    | 29 +++++--
+ src/ApplicationActivator.cs                        | 27 +++++++
+ src/IActivatorBuilder.cs                           | 14 ++++
+ 16 files changed, 330 insertions(+), 160 deletions(-)
+ delete mode 100644 global.json
+ create mode 100644 netcore/MassActivation.Services/MassActivation.Services.csproj
+ create mode 100644 netcore/MassActivation.UnitTests/MassActivation.UnitTests.csproj
+ create mode 100644 netcore/MassActivation/MassActivation.netcore.csproj
+ delete mode 100644 netcore/MassActivation/MassActivation.netcore.xproj
+ delete mode 100644 netcore/MassActivation/project.json
+ create mode 100644 samples/MassActivation.NetCore.Web/MassActivation.NetCore.Web.csproj
+
+diff --git a/GlobalAssemblyInfo.cs b/GlobalAssemblyInfo.cs
+index 27fd1b0..19ec95f 100644
+--- a/GlobalAssemblyInfo.cs
++++ b/GlobalAssemblyInfo.cs
+@@ -6,5 +6,5 @@
+ [assembly: AssemblyTrademark("")]
+ [assembly: AssemblyCulture("")]
+ 
+-[assembly: AssemblyVersion("1.3.0.0")]
+-[assembly: AssemblyFileVersion("1.3.0.0")]
++[assembly: AssemblyVersion("1.4.0.0")]
++[assembly: AssemblyFileVersion("1.4.0.0")]
+diff --git a/MassActivation.sln b/MassActivation.sln
+index cb10b33..9a6c554 100644
+--- a/MassActivation.sln
++++ b/MassActivation.sln
+@@ -1,7 +1,7 @@
+ ﻿
+ Microsoft Visual Studio Solution File, Format Version 12.00
+-# Visual Studio 14
+-VisualStudioVersion = 14.0.25420.1
++# Visual Studio 15
++VisualStudioVersion = 15.0.26430.6
+ MinimumVisualStudioVersion = 10.0.40219.1
+ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTest", "UnitTest", "{1221F874-7083-4EA7-94CF-D8381B65EACB}"
+ EndProject
+@@ -14,7 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{477BE195
+ EndProject
+ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CBC4B7FB-ED20-42F0-AB6F-14552F8427A6}"
+ 	ProjectSection(SolutionItems) = preProject
+-		global.json = global.json
+ 		GlobalAssemblyInfo.cs = GlobalAssemblyInfo.cs
+ 		LICENSE = LICENSE
+ 		MassActivation.snk = MassActivation.snk
+@@ -47,14 +46,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassActivation.UnitTests.ne
+ EndProject
+ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassActivation.UnitTests.net35", "test\net35\MassActivation.UnitTests.net35.csproj", "{165E205E-2071-415C-A013-D1C527B18C3A}"
+ EndProject
+-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MassActivation.netcore", "netcore\MassActivation\MassActivation.netcore.xproj", "{8ECD2239-016F-4A06-BA12-90B37C374B51}"
+-EndProject
+ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MassActivation.UnitTests.netcore", "netcore\MassActivation.UnitTests\MassActivation.UnitTests.netcore.xproj", "{4530A68F-00F2-4E8E-A45F-AB777BFD1EA8}"
+ EndProject
+ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassActivation.UnitTests.net40", "test\net40\MassActivation.UnitTests.net40.csproj", "{67F76F6F-A1A1-481D-BC58-B82287729311}"
+ EndProject
+ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MassActivation.NetCore.Services", "netcore\MassActivation.Services\MassActivation.NetCore.Services.xproj", "{292B0A83-77E7-4673-BCED-455926309115}"
+ EndProject
++Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MassActivation.netcore", "netcore\MassActivation\MassActivation.netcore.csproj", "{E718F845-5A1D-4665-8A91-79D7025A7F23}"
++EndProject
+ Global
+ 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+ 		Debug|Any CPU = Debug|Any CPU
+@@ -105,10 +104,6 @@ Global
+ 		{165E205E-2071-415C-A013-D1C527B18C3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+ 		{165E205E-2071-415C-A013-D1C527B18C3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+ 		{165E205E-2071-415C-A013-D1C527B18C3A}.Release|Any CPU.Build.0 = Release|Any CPU
+-		{8ECD2239-016F-4A06-BA12-90B37C374B51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+-		{8ECD2239-016F-4A06-BA12-90B37C374B51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+-		{8ECD2239-016F-4A06-BA12-90B37C374B51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+-		{8ECD2239-016F-4A06-BA12-90B37C374B51}.Release|Any CPU.Build.0 = Release|Any CPU
+ 		{4530A68F-00F2-4E8E-A45F-AB777BFD1EA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+ 		{4530A68F-00F2-4E8E-A45F-AB777BFD1EA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+ 		{4530A68F-00F2-4E8E-A45F-AB777BFD1EA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+@@ -121,6 +116,10 @@ Global
+ 		{292B0A83-77E7-4673-BCED-455926309115}.Debug|Any CPU.Build.0 = Debug|Any CPU
+ 		{292B0A83-77E7-4673-BCED-455926309115}.Release|Any CPU.ActiveCfg = Release|Any CPU
+ 		{292B0A83-77E7-4673-BCED-455926309115}.Release|Any CPU.Build.0 = Release|Any CPU
++		{E718F845-5A1D-4665-8A91-79D7025A7F23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
++		{E718F845-5A1D-4665-8A91-79D7025A7F23}.Debug|Any CPU.Build.0 = Debug|Any CPU
++		{E718F845-5A1D-4665-8A91-79D7025A7F23}.Release|Any CPU.ActiveCfg = Release|Any CPU
++		{E718F845-5A1D-4665-8A91-79D7025A7F23}.Release|Any CPU.Build.0 = Release|Any CPU
+ 	EndGlobalSection
+ 	GlobalSection(SolutionProperties) = preSolution
+ 		HideSolutionNode = FALSE
+@@ -137,9 +136,9 @@ Global
+ 		{436FD527-E650-44FA-A08B-908B10592C9F} = {5E34DAA2-083D-426F-B121-F4CA03F96DF4}
+ 		{2A9C59EA-8696-4EE3-8B7D-D09E40A09A40} = {1221F874-7083-4EA7-94CF-D8381B65EACB}
+ 		{165E205E-2071-415C-A013-D1C527B18C3A} = {1221F874-7083-4EA7-94CF-D8381B65EACB}
+-		{8ECD2239-016F-4A06-BA12-90B37C374B51} = {D55E3A34-23BA-4576-BC80-212AF4E65335}
+ 		{4530A68F-00F2-4E8E-A45F-AB777BFD1EA8} = {1221F874-7083-4EA7-94CF-D8381B65EACB}
+ 		{67F76F6F-A1A1-481D-BC58-B82287729311} = {1221F874-7083-4EA7-94CF-D8381B65EACB}
+ 		{292B0A83-77E7-4673-BCED-455926309115} = {5E34DAA2-083D-426F-B121-F4CA03F96DF4}
++		{E718F845-5A1D-4665-8A91-79D7025A7F23} = {D55E3A34-23BA-4576-BC80-212AF4E65335}
+ 	EndGlobalSection
+ EndGlobal
+diff --git a/global.json b/global.json
+deleted file mode 100644
+index 6cc176d..0000000
+--- a/global.json
++++ /dev/null
+@@ -1,3 +0,0 @@
+-{
+-  "projects": [ "netcore" ]
+-}
+\ No newline at end of file
+diff --git a/netcore/MassActivation.Services/MassActivation.Services.csproj b/netcore/MassActivation.Services/MassActivation.Services.csproj
+new file mode 100644
+index 0000000..5658c22
+--- /dev/null
++++ b/netcore/MassActivation.Services/MassActivation.Services.csproj
+@@ -0,0 +1,35 @@
++﻿<Project Sdk="Microsoft.NET.Sdk">
++
++  <PropertyGroup>
++    <AssemblyTitle>MassActivation.Services</AssemblyTitle>
++    <TargetFramework>netstandard1.6</TargetFramework>
++    <AssemblyName>MassActivation.Services</AssemblyName>
++    <PackageId>MassActivation.Services</PackageId>
++    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
++    <PackageTargetFallback>$(PackageTargetFallback);dotnet5.6</PackageTargetFallback>
++    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
++    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
++    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
++    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
++    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
++    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
++    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
++    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
++  </PropertyGroup>
++
++  <ItemGroup>
++    <ProjectReference Include="..\MassActivation\MassActivation.csproj" />
++  </ItemGroup>
++
++  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
++    <DefineConstants>$(DefineConstants);NetCore</DefineConstants>
++    <AssemblyOriginatorKeyFile>../../MassActivation.snk</AssemblyOriginatorKeyFile>
++    <SignAssembly>true</SignAssembly>
++    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
++  </PropertyGroup>
++
++  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
++    <Compile Include="..\..\GlobalAssemblyInfo.cs;..\..\samples\MassActivation.Services\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
++  </ItemGroup>
++
++</Project>
+diff --git a/netcore/MassActivation.UnitTests/MassActivation.UnitTests.csproj b/netcore/MassActivation.UnitTests/MassActivation.UnitTests.csproj
+new file mode 100644
+index 0000000..8d6fd1e
+--- /dev/null
++++ b/netcore/MassActivation.UnitTests/MassActivation.UnitTests.csproj
+@@ -0,0 +1,48 @@
++﻿<Project Sdk="Microsoft.NET.Sdk">
++
++  <PropertyGroup>
++    <AssemblyTitle>MassActivation.UnitTests</AssemblyTitle>
++    <TargetFramework>netcoreapp1.0</TargetFramework>
++    <AssemblyName>MassActivation.UnitTests</AssemblyName>
++    <PackageId>MassActivation.UnitTests</PackageId>
++    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
++    <RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
++    <PackageTargetFallback>$(PackageTargetFallback);dotnet5.6</PackageTargetFallback>
++    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
++    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
++    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
++    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
++    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
++    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
++    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
++    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
++  </PropertyGroup>
++
++  <ItemGroup>
++    <ProjectReference Include="..\MassActivation\MassActivation.csproj" />
++  </ItemGroup>
++
++  <ItemGroup>
++    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20170106-08" />
++    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta5-build1225" />
++    <PackageReference Include="System.Reflection.Emit" Version="4.0.1" />
++    <PackageReference Include="xunit" Version="2.2.0-beta5-build3474" />
++    <PackageReference Include="xunit.runner.console" Version="2.2.0-beta2-build3300" />
++  </ItemGroup>
++
++  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">
++    <DefineConstants>$(DefineConstants);NetCore</DefineConstants>
++    <AssemblyOriginatorKeyFile>../../MassActivation.snk</AssemblyOriginatorKeyFile>
++    <SignAssembly>true</SignAssembly>
++    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
++  </PropertyGroup>
++
++  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">
++    <Compile Remove="..\..\test\CompileHelper.Net.cs" />
++    <Compile Include="..\..\GlobalAssemblyInfo.cs;..\..\test\*.cs" Exclude="..\..\test\CompileHelper.Net.cs;bin\**;obj\**;**\*.xproj;packages\**" />
++    <None Update="xunit.runner.json">
++      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
++    </None>
++  </ItemGroup>
++
++</Project>
+diff --git a/netcore/MassActivation/MassActivation.netcore.csproj b/netcore/MassActivation/MassActivation.netcore.csproj
+new file mode 100644
+index 0000000..1215992
+--- /dev/null
++++ b/netcore/MassActivation/MassActivation.netcore.csproj
+@@ -0,0 +1,72 @@
++﻿<Project Sdk="Microsoft.NET.Sdk">
++
++  <PropertyGroup>
++    <AssemblyTitle>MassActivation</AssemblyTitle>
++    <TargetFramework>netstandard1.6</TargetFramework>
++    <AssemblyName>MassActivation</AssemblyName>
++    <PackageId>MassActivation</PackageId>
++    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
++    <PackageTargetFallback>$(PackageTargetFallback);dotnet5.6</PackageTargetFallback>
++    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
++    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
++    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
++    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
++    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
++    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
++    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
++    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
++    <Version>1.3.0.0</Version>
++  </PropertyGroup>
++
++  <ItemGroup>
++    <EmbeddedResource Include="..\..\src\Strings.resx" />
++  </ItemGroup>
++
++  <ItemGroup>
++    <PackageReference Include="System.ComponentModel" Version="4.0.1" />
++    <PackageReference Include="System.Runtime.Loader" Version="4.0.0" />
++    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.0.0" />
++    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="1.0.0" />
++  </ItemGroup>
++
++  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
++    <DefineConstants>$(DefineConstants);NetCore</DefineConstants>
++    <GenerateDocumentationFile>true</GenerateDocumentationFile>
++    <AssemblyOriginatorKeyFile>../../MassActivation.snk</AssemblyOriginatorKeyFile>
++    <SignAssembly>true</SignAssembly>
++    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
++  </PropertyGroup>
++
++  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
++    <Compile Remove="..\..\src\ActivatingEnvironment.Net.cs;..\..\src\ApplicationActivator.Net.cs" />
++    <Compile Include="..\..\GlobalAssemblyInfo.cs;..\..\src\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**;..\..\src\ActivatingEnvironment.Net.cs;..\..\src\ApplicationActivator.Net.cs" />
++    <EmbeddedResource Include="..\..\src\**\*.resx" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
++  </ItemGroup>
++
++  <ItemGroup>
++    <Compile Update="..\..\src\ActivatingEnvironment.Core.cs" Link="ActivatingEnvironment.Core.cs" />
++    <Compile Update="..\..\src\ActivatingEnvironment.cs" Link="ActivatingEnvironment.cs" />
++    <Compile Update="..\..\src\ActivatingEnvironmentExtensions.cs" Link="ActivatingEnvironmentExtensions.cs" />
++    <Compile Update="..\..\src\ActivationException.cs" Link="ActivationException.cs" />
++    <Compile Update="..\..\src\ActivationMetadata.cs" Link="ActivationMetadata.cs" />
++    <Compile Update="..\..\src\ActivationPriority.cs" Link="ActivationPriority.cs" />
++    <Compile Update="..\..\src\ActivationPriorityAttribute.cs" Link="ActivationPriorityAttribute.cs" />
++    <Compile Update="..\..\src\ActivationType.cs" Link="ActivationType.cs" />
++    <Compile Update="..\..\src\ActivatorBuilder.cs" Link="ActivatorBuilder.cs" />
++    <Compile Update="..\..\src\ApplicationActivator.Core.cs" Link="ApplicationActivator.Core.cs" />
++    <Compile Update="..\..\src\ApplicationActivator.cs" Link="ApplicationActivator.cs" />
++    <Compile Update="..\..\src\AssemblyActivatorAttribute.cs" Link="AssemblyActivatorAttribute.cs" />
++    <Compile Update="..\..\src\EnvironmentName.cs" Link="EnvironmentName.cs" />
++    <Compile Update="..\..\src\IActivatingEnvironment.cs" Link="IActivatingEnvironment.cs" />
++    <Compile Update="..\..\src\IActivatorBuilder.cs" Link="IActivatorBuilder.cs" />
++    <Compile Update="..\..\src\Strings.Designer.cs" Link="Strings.Designer.cs" />
++    <Compile Update="..\..\src\TypeNameHelper.cs" Link="TypeNameHelper.cs" />
++  </ItemGroup>
++
++  <ItemGroup>
++    <EmbeddedResource Update="..\..\src\Strings.resx" Link="Strings.resx">
++      <Generator>ResXFileCodeGenerator</Generator>
++    </EmbeddedResource>
++  </ItemGroup>
++
++</Project>
+diff --git a/netcore/MassActivation/MassActivation.netcore.xproj b/netcore/MassActivation/MassActivation.netcore.xproj
+deleted file mode 100644
+index 8de69b9..0000000
+--- a/netcore/MassActivation/MassActivation.netcore.xproj
++++ /dev/null
+@@ -1,92 +0,0 @@
+-﻿<?xml version="1.0" encoding="utf-8"?>
+-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+-  <PropertyGroup>
+-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
+-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+-  </PropertyGroup>
+-  <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
+-  <PropertyGroup Label="Globals">
+-    <ProjectGuid>8ecd2239-016f-4a06-ba12-90b37c374b51</ProjectGuid>
+-    <RootNamespace>MassActivation</RootNamespace>
+-    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
+-    <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
+-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+-  </PropertyGroup>
+-  <ItemGroup>
+-    <Compile Include="..\..\GlobalAssemblyInfo.cs">
+-      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\ActivatingEnvironment.cs">
+-      <Link>ActivatingEnvironment.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\ActivatingEnvironment.Core.cs">
+-      <Link>ActivatingEnvironment.Core.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\ActivatingEnvironmentExtensions.cs">
+-      <Link>ActivatingEnvironmentExtensions.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\ActivationException.cs">
+-      <Link>ActivationException.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\ActivationMetadata.cs">
+-      <Link>ActivationMetadata.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\ActivationPriority.cs">
+-      <Link>ActivationPriority.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\ActivationPriorityAttribute.cs">
+-      <Link>ActivationPriorityAttribute.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\ActivationType.cs">
+-      <Link>ActivationType.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\ActivatorBuilder.cs">
+-      <Link>ActivatorBuilder.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\ApplicationActivator.cs">
+-      <Link>ApplicationActivator.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\ApplicationActivator.Core.cs">
+-      <Link>ApplicationActivator.Core.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\AssemblyActivatorAttribute.cs">
+-      <Link>AssemblyActivatorAttribute.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\EnvironmentName.cs">
+-      <Link>EnvironmentName.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\IActivatingEnvironment.cs">
+-      <Link>IActivatingEnvironment.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\IActivatorBuilder.cs">
+-      <Link>IActivatorBuilder.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\Properties\AssemblyInfo.cs">
+-      <Link>Properties\AssemblyInfo.cs</Link>
+-    </Compile>
+-    <Compile Include="..\..\src\TypeNameHelper.cs">
+-      <Link>TypeNameHelper.cs</Link>
+-    </Compile>
+-    <None Include="..\..\MassActivation.snk">
+-      <Link>Properties\MassActivation.snk</Link>
+-    </None>
+-    <Compile Include="..\..\src\Strings.Designer.cs">
+-      <AutoGen>True</AutoGen>
+-      <DesignTime>True</DesignTime>
+-      <Link>Strings.Designer.cs</Link>
+-      <DependentUpon>Strings.resx</DependentUpon>
+-    </Compile>
+-    <EmbeddedResource Include="..\..\src\Strings.resx">
+-      <Link>Strings.resx</Link>
+-    </EmbeddedResource>
+-  </ItemGroup>
+-  <PropertyGroup>
+-    <SchemaVersion>2.0</SchemaVersion>
+-  </PropertyGroup>
+-  <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.targets" Condition="'$(VSToolsPath)' != ''" />
+-  <ProjectExtensions>
+-    <VisualStudio>
+-      <UserProperties project_1json__JSONSchema="dotnet5.6" />
+-    </VisualStudio>
+-  </ProjectExtensions>
+-</Project>
+\ No newline at end of file
+diff --git a/netcore/MassActivation/project.json b/netcore/MassActivation/project.json
+deleted file mode 100644
+index 4abe417..0000000
+--- a/netcore/MassActivation/project.json
++++ /dev/null
+@@ -1,31 +0,0 @@
+-{
+-  "title": "MassActivation",
+-  "version": "1.0.0-*",
+-
+-  "dependencies": {
+-    "NETStandard.Library": "1.6.0",
+-    "System.ComponentModel": "4.0.1",
+-    "System.Runtime.Loader": "4.0.0",
+-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0",
+-    "Microsoft.Extensions.DependencyModel": "1.0.0"
+-  },
+-
+-  "frameworks": {
+-    "netstandard1.6": {
+-      "imports": "dotnet5.6",
+-      "buildOptions": {
+-        "compile": {
+-          "include": [ "../../GlobalAssemblyInfo.cs", "../../src/**/*.cs" ],
+-          "excludeFiles": [ "../../src/ActivatingEnvironment.Net.cs", "../../src/ApplicationActivator.Net.cs" ]
+-        },
+-        "embed": {
+-          "include": [ "../../src/**/*.resx" ]
+-        },
+-        "define": [ "NetCore" ],
+-        "keyFile": "../../MassActivation.snk",
+-        "xmlDoc": true,
+-        "outputName": "MassActivation"
+-      }
+-    }
+-  }
+-}
+diff --git a/nuget/MassActivation.nuspec b/nuget/MassActivation.nuspec
+index 4be6dfb..0f436e5 100644
+--- a/nuget/MassActivation.nuspec
++++ b/nuget/MassActivation.nuspec
+@@ -2,7 +2,7 @@
+ <package>
+   <metadata minClientVersion="3.4">
+     <id>MassActivation</id>
+-    <version>1.3.0</version>
++    <version>1.4.0</version>
+     <authors>edwardmeng</authors>
+     <owners>edwardmeng</owners>
+     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
+diff --git a/nuget/build.cmd b/nuget/build.cmd
+index 2a1d466..216ab1d 100644
+--- a/nuget/build.cmd
++++ b/nuget/build.cmd
+@@ -7,21 +7,17 @@ set version=
+ if not "%PackageVersion%" == "" (
+    set version=-Version %PackageVersion%
+ ) else (
+-   set version=-Version 1.3.0
++   set version=-Version 1.4.0
+ )
+ REM Determine msbuild path
+-set msbuildtmp="%ProgramFiles%\MSBuild\14.0\bin\msbuild"
+-if exist %msbuildtmp% set msbuild=%msbuildtmp%
+-set msbuildtmp="%ProgramFiles(x86)%\MSBuild\14.0\bin\msbuild"
+-if exist %msbuildtmp% set msbuild=%msbuildtmp%
+-set VisualStudioVersion=14.0
++set msbuild="I:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\msbuild"
+ 
+ REM Package restore
+-echo.
+-echo Running package restore...
+-call :ExecuteCmd nuget.exe restore ..\MassActivation.sln -NonInteractive -ConfigFile nuget.config
+-IF %ERRORLEVEL% NEQ 0 goto error
+-
++rem echo.
++rem echo Running package restore...
++rem call :ExecuteCmd nuget.exe restore ..\MassActivation.sln -NonInteractive -ConfigFile nuget.config
++rem IF %ERRORLEVEL% NEQ 0 goto error
++echo %msbuild%
+ echo Building solution...
+ call :ExecuteCmd %msbuild% "..\build\net35\MassActivation.net35.csproj" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
+ IF %ERRORLEVEL% NEQ 0 goto error
+@@ -29,7 +25,7 @@ call :ExecuteCmd %msbuild% "..\build\net40\MassActivation.net40.csproj" /p:Confi
+ IF %ERRORLEVEL% NEQ 0 goto error
+ call :ExecuteCmd %msbuild% "..\build\net451\MassActivation.net451.csproj" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
+ IF %ERRORLEVEL% NEQ 0 goto error
+-call :ExecuteCmd %msbuild% "..\netcore\MassActivation\MassActivation.netcore.xproj" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
++call :ExecuteCmd %msbuild% "..\netcore\MassActivation\MassActivation.netcore.csproj" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
+ IF %ERRORLEVEL% NEQ 0 goto error
+ 
+ echo Packaging...
+diff --git a/samples/MassActivation.NetCore.Web/MassActivation.NetCore.Web.csproj b/samples/MassActivation.NetCore.Web/MassActivation.NetCore.Web.csproj
+new file mode 100644
+index 0000000..4234bbb
+--- /dev/null
++++ b/samples/MassActivation.NetCore.Web/MassActivation.NetCore.Web.csproj
+@@ -0,0 +1,44 @@
++<Project Sdk="Microsoft.NET.Sdk.Web">
++
++  <PropertyGroup>
++    <TargetFramework>netcoreapp1.0</TargetFramework>
++    <PreserveCompilationContext>true</PreserveCompilationContext>
++    <AssemblyName>MassActivation.NetCore.Web</AssemblyName>
++    <OutputType>Exe</OutputType>
++    <PackageId>MassActivation.NetCore.Web</PackageId>
++    <RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
++    <PackageTargetFallback>$(PackageTargetFallback);dotnet5.6</PackageTargetFallback>
++  </PropertyGroup>
++
++  <ItemGroup>
++    <None Update="wwwroot\**\*;Views\**\*;Areas\**\Views">
++      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
++    </None>
++  </ItemGroup>
++
++  <ItemGroup>
++    <ProjectReference Include="..\..\netcore\MassActivation\MassActivation.csproj" />
++    <ProjectReference Include="..\..\netcore\MassActivation.Services\MassActivation.Services.csproj" />
++  </ItemGroup>
++
++  <ItemGroup>
++    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.0.2" />
++    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.0.2" />
++    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.0.2" />
++    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.0.2" />
++    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.0.2" />
++    <PackageReference Include="Microsoft.Extensions.Logging" Version="1.0.2" />
++    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.0.2" />
++    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.0.2" />
++    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="1.0.2" />
++    <PackageReference Include="BundlerMinifier.Core" Version="2.2.301" />
++    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.0.3" />
++    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.0.3" />
++  </ItemGroup>
++
++  <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
++    <Exec Command="bower install" />
++    <Exec Command="dotnet bundle" />
++  </Target>
++
++</Project>
+diff --git a/src/ActivatorBuilder.cs b/src/ActivatorBuilder.cs
+index d2cc9d9..c888a5c 100644
+--- a/src/ActivatorBuilder.cs
++++ b/src/ActivatorBuilder.cs
+@@ -100,6 +100,26 @@ namespace MassActivation
+             return ApplicationActivator.RemoveService<T>();
+         }
+ 
++        /// <summary>
++        /// Excludes the specified startup type from the startup process.
++        /// </summary>
++        /// <param name="type">The type to exclude from the startup process.</param>
++        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
++        public IActivatorBuilder ExcludeStartup(Type type)
++        {
++            return ApplicationActivator.ExcludeStartup(type);
++        }
++
++        /// <summary>
++        /// Excludes the specified startup type from the startup process.
++        /// </summary>
++        /// <typeparam name="T">The type to exclude from the startup process.</typeparam>
++        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
++        public IActivatorBuilder ExcludeStartup<T>()
++        {
++            return ApplicationActivator.ExcludeStartup<T>();
++        }
++
+ #if NetCore
+ 
+         /// <summary>
+diff --git a/src/ApplicationActivator.Core.cs b/src/ApplicationActivator.Core.cs
+index a379a59..5e47576 100644
+--- a/src/ApplicationActivator.Core.cs
++++ b/src/ApplicationActivator.Core.cs
+@@ -24,6 +24,10 @@ namespace MassActivation
+             if (activatorAttribute != null)
+             {
+                 var startupType = activatorAttribute.StartupType.GetTypeInfo();
++                if (_excludedTypes != null && _excludedTypes.Contains(startupType.GetType()))
++                {
++                    return null;
++                }
+                 if (startupType.IsGenericTypeDefinition)
+                 {
+                     throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Startup_GenericType, TypeNameHelper.GetTypeDisplayName(activatorAttribute.StartupType), startupAssemblyName));
+@@ -46,10 +50,28 @@ namespace MassActivation
+                 }
+                 return null;
+             };
+-            return resolveActivator(assembly.GetType(startupNameWithEnv)) ??
+-                   resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithEnv)) ??
+-                   resolveActivator(assembly.GetType(startupNameWithoutEnv)) ??
+-                   resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv));
++            var startupWithEnv = resolveActivator(assembly.GetType(startupNameWithEnv));
++            if (startupWithEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithEnv.GetType())))
++            {
++                return startupWithEnv;
++            }
++            var startupWithEnvAndNamespace =
++                resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithEnv));
++            if (startupWithEnvAndNamespace != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithEnvAndNamespace.GetType())))
++            {
++                return startupWithEnvAndNamespace;
++            }
++            var startupWithoutEnv = resolveActivator(assembly.GetType(startupNameWithoutEnv));
++            if (startupWithoutEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithoutEnv.GetType())))
++            {
++                return startupWithoutEnv;
++            }
++            var startupWithNamespaceWithoutEnv = resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv));
++            if (startupWithNamespaceWithoutEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithNamespaceWithoutEnv.GetType())))
++            {
++                return startupWithNamespaceWithoutEnv;
++            }
++            return null;
+         }
+ 
+         private static ActivationMetadata LookupClassConstructor(ActivationType type)
+diff --git a/src/ApplicationActivator.Net.cs b/src/ApplicationActivator.Net.cs
+index 90a3241..a985aef 100644
+--- a/src/ApplicationActivator.Net.cs
++++ b/src/ApplicationActivator.Net.cs
+@@ -20,7 +20,7 @@ namespace MassActivation
+             AssemblyActivatorAttribute[] attributes;
+             try
+             {
+-                attributes = Attribute.GetCustomAttributes(assembly,typeof (AssemblyActivatorAttribute)).OfType<AssemblyActivatorAttribute>().ToArray();
++                attributes = Attribute.GetCustomAttributes(assembly, typeof(AssemblyActivatorAttribute)).OfType<AssemblyActivatorAttribute>().ToArray();
+             }
+             catch (CustomAttributeFormatException)
+             {
+@@ -33,6 +33,7 @@ namespace MassActivation
+             if (activatorAttribute != null)
+             {
+                 var startupType = activatorAttribute.StartupType;
++                if (_excludedTypes != null && _excludedTypes.Contains(startupType)) return null;
+                 if (startupType.IsGenericTypeDefinition)
+                 {
+                     throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Startup_GenericType, TypeNameHelper.GetTypeDisplayName(activatorAttribute.StartupType), startupAssemblyName));
+@@ -54,10 +55,28 @@ namespace MassActivation
+                 }
+                 return null;
+             };
+-            return resolveActivator(assembly.GetType(startupNameWithEnv, false)) ??
+-                   resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithEnv, false)) ??
+-                   resolveActivator(assembly.GetType(startupNameWithoutEnv, false)) ??
+-                   resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv, false));
++            var startupWithEnv = resolveActivator(assembly.GetType(startupNameWithEnv, false));
++            if (startupWithEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithEnv.GetType())))
++            {
++                return startupWithEnv;
++            }
++            var startupWithEnvAndNamespace =
++                resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithEnv, false));
++            if (startupWithEnvAndNamespace != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithEnvAndNamespace.GetType())))
++            {
++                return startupWithEnvAndNamespace;
++            }
++            var startupWithoutEnv = resolveActivator(assembly.GetType(startupNameWithoutEnv, false));
++            if (startupWithoutEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithoutEnv.GetType())))
++            {
++                return startupWithoutEnv;
++            }
++            var startupWithNamespaceWithoutEnv = resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv, false));
++            if (startupWithNamespaceWithoutEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithNamespaceWithoutEnv.GetType())))
++            {
++                return startupWithNamespaceWithoutEnv;
++            }
++            return null;
+         }
+ 
+         private static ActivationMetadata LookupClassConstructor(ActivationType type)
+diff --git a/src/ApplicationActivator.cs b/src/ApplicationActivator.cs
+index 5f031e3..be65df7 100644
+--- a/src/ApplicationActivator.cs
++++ b/src/ApplicationActivator.cs
+@@ -62,6 +62,7 @@ namespace MassActivation
+         private static string[] _shutdownMethodNames = { "Unload", "Shutdown" };
+         private static ActivatingEnvironment _environment;
+         private static List<ActivationType> _activators;
++        private static HashSet<Type> _excludedTypes;
+         private static string[] _startupMethodNames;
+         private static bool _initialized;
+ 
+@@ -449,6 +450,32 @@ namespace MassActivation
+             return new ActivatorBuilder();
+         }
+ 
++        /// <summary>
++        /// Excludes the specified startup type from the startup process.
++        /// </summary>
++        /// <param name="type">The type to exclude from the startup process.</param>
++        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
++        public static IActivatorBuilder ExcludeStartup(Type type)
++        {
++            if (_excludedTypes == null)
++            {
++                _excludedTypes = new HashSet<Type>();
++            }
++            _excludedTypes.Add(type);
++            return new ActivatorBuilder();
++        }
++
++        /// <summary>
++        /// Excludes the specified startup type from the startup process.
++        /// </summary>
++        /// <typeparam name="T">The type to exclude from the startup process.</typeparam>
++        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
++        public static IActivatorBuilder ExcludeStartup<T>()
++        {
++            return ExcludeStartup(typeof(T));
++        }
++
++
+ #if NetCore
+         /// <summary>
+         /// Specify the dynamically loaded assembly.
+diff --git a/src/IActivatorBuilder.cs b/src/IActivatorBuilder.cs
+index 2f9ac54..ebf77e1 100644
+--- a/src/IActivatorBuilder.cs
++++ b/src/IActivatorBuilder.cs
+@@ -73,6 +73,20 @@ namespace MassActivation
+         /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+         IActivatorBuilder RemoveService<T>();
+ 
++        /// <summary>
++        /// Excludes the specified startup type from the startup process.
++        /// </summary>
++        /// <param name="type">The type to exclude from the startup process.</param>
++        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
++        IActivatorBuilder ExcludeStartup(Type type);
++
++        /// <summary>
++        /// Excludes the specified startup type from the startup process.
++        /// </summary>
++        /// <typeparam name="T">The type to exclude from the startup process.</typeparam>
++        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
++        IActivatorBuilder ExcludeStartup<T>();
++
+ #if NetCore
+         /// <summary>
+         /// Specify the dynamically loaded assembly.
+-- 
+2.12.0.windows.1
+

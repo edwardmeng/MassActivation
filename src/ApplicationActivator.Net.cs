@@ -56,23 +56,23 @@ namespace MassActivation
                 return null;
             };
             var startupWithEnv = resolveActivator(assembly.GetType(startupNameWithEnv, false));
-            if (startupWithEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithEnv.GetType())))
+            if (startupWithEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithEnv.GetTargetType())))
             {
                 return startupWithEnv;
             }
             var startupWithEnvAndNamespace =
                 resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithEnv, false));
-            if (startupWithEnvAndNamespace != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithEnvAndNamespace.GetType())))
+            if (startupWithEnvAndNamespace != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithEnvAndNamespace.GetTargetType())))
             {
                 return startupWithEnvAndNamespace;
             }
             var startupWithoutEnv = resolveActivator(assembly.GetType(startupNameWithoutEnv, false));
-            if (startupWithoutEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithoutEnv.GetType())))
+            if (startupWithoutEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithoutEnv.GetTargetType())))
             {
                 return startupWithoutEnv;
             }
             var startupWithNamespaceWithoutEnv = resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv, false));
-            if (startupWithNamespaceWithoutEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithNamespaceWithoutEnv.GetType())))
+            if (startupWithNamespaceWithoutEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithNamespaceWithoutEnv.GetTargetType())))
             {
                 return startupWithNamespaceWithoutEnv;
             }
