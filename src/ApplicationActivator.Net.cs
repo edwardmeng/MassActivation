@@ -20,7 +20,7 @@ namespace MassActivation
             AssemblyActivatorAttribute[] attributes;
             try
             {
-                attributes = Attribute.GetCustomAttributes(assembly,typeof (AssemblyActivatorAttribute)).OfType<AssemblyActivatorAttribute>().ToArray();
+                attributes = Attribute.GetCustomAttributes(assembly, typeof(AssemblyActivatorAttribute)).OfType<AssemblyActivatorAttribute>().ToArray();
             }
             catch (CustomAttributeFormatException)
             {
@@ -33,6 +33,7 @@ namespace MassActivation
             if (activatorAttribute != null)
             {
                 var startupType = activatorAttribute.StartupType;
+                if (_excludedTypes != null && _excludedTypes.Contains(startupType)) return null;
                 if (startupType.IsGenericTypeDefinition)
                 {
                     throw new ActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Cannot_Startup_GenericType, TypeNameHelper.GetTypeDisplayName(activatorAttribute.StartupType), startupAssemblyName));
@@ -54,10 +55,28 @@ namespace MassActivation
                 }
                 return null;
             };
-            return resolveActivator(assembly.GetType(startupNameWithEnv, false)) ??
-                   resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithEnv, false)) ??
-                   resolveActivator(assembly.GetType(startupNameWithoutEnv, false)) ??
-                   resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv, false));
+            var startupWithEnv = resolveActivator(assembly.GetType(startupNameWithEnv, false));
+            if (startupWithEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithEnv.GetType())))
+            {
+                return startupWithEnv;
+            }
+            var startupWithEnvAndNamespace =
+                resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithEnv, false));
+            if (startupWithEnvAndNamespace != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithEnvAndNamespace.GetType())))
+            {
+                return startupWithEnvAndNamespace;
+            }
+            var startupWithoutEnv = resolveActivator(assembly.GetType(startupNameWithoutEnv, false));
+            if (startupWithoutEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithoutEnv.GetType())))
+            {
+                return startupWithoutEnv;
+            }
+            var startupWithNamespaceWithoutEnv = resolveActivator(assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv, false));
+            if (startupWithNamespaceWithoutEnv != null && (_excludedTypes == null || !_excludedTypes.Contains(startupWithNamespaceWithoutEnv.GetType())))
+            {
+                return startupWithNamespaceWithoutEnv;
+            }
+            return null;
         }
 
         private static ActivationMetadata LookupClassConstructor(ActivationType type)

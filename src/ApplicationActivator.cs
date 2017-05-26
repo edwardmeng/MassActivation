@@ -62,6 +62,7 @@ namespace MassActivation
         private static string[] _shutdownMethodNames = { "Unload", "Shutdown" };
         private static ActivatingEnvironment _environment;
         private static List<ActivationType> _activators;
+        private static HashSet<Type> _excludedTypes;
         private static string[] _startupMethodNames;
         private static bool _initialized;
 
@@ -448,6 +449,32 @@ namespace MassActivation
             RemoveService(typeof(T));
             return new ActivatorBuilder();
         }
+
+        /// <summary>
+        /// Excludes the specified startup type from the startup process.
+        /// </summary>
+        /// <param name="type">The type to exclude from the startup process.</param>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public static IActivatorBuilder ExcludeStartup(Type type)
+        {
+            if (_excludedTypes == null)
+            {
+                _excludedTypes = new HashSet<Type>();
+            }
+            _excludedTypes.Add(type);
+            return new ActivatorBuilder();
+        }
+
+        /// <summary>
+        /// Excludes the specified startup type from the startup process.
+        /// </summary>
+        /// <typeparam name="T">The type to exclude from the startup process.</typeparam>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        public static IActivatorBuilder ExcludeStartup<T>()
+        {
+            return ExcludeStartup(typeof(T));
+        }
+
 
 #if NetCore
         /// <summary>

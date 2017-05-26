@@ -73,6 +73,20 @@ namespace MassActivation
         /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
         IActivatorBuilder RemoveService<T>();
 
+        /// <summary>
+        /// Excludes the specified startup type from the startup process.
+        /// </summary>
+        /// <param name="type">The type to exclude from the startup process.</param>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        IActivatorBuilder ExcludeStartup(Type type);
+
+        /// <summary>
+        /// Excludes the specified startup type from the startup process.
+        /// </summary>
+        /// <typeparam name="T">The type to exclude from the startup process.</typeparam>
+        /// <returns>The <see cref="IActivatorBuilder"/>.</returns>
+        IActivatorBuilder ExcludeStartup<T>();
+
 #if NetCore
         /// <summary>
         /// Specify the dynamically loaded assembly.
